@@ -1,0 +1,19 @@
+<!-- marketplace/templates/marketplace/wishlist.html -->
+{% extends 'marketplace/base.html' %}
+
+{% block title %}Your Wishlist{% endblock %}
+
+{% block content %}
+<h1>Your Wishlist</h1>
+<ul>
+    {% for item in wishlist_items %}
+        <li>
+            <h3>{{ item.product.name }}</h3>
+            <p>Price: {{ item.product.price }}</p>
+            <a href="{% url 'product_detail' item.product.id %}">View Product</a>
+        </li>
+    {% empty %}
+        <li>Your wishlist is empty.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

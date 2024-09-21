@@ -1,0 +1,9 @@
+{% load static %}
+<h1>{{ profile.user.username }}'s Profile</h1>
+{% if profile.profile_picture %}
+    <img src="{{ profile.profile_picture.url }}" alt="Profile Picture">
+{% else %}
+<img src="{% static 'images/default_profile_pic.jpg' %}" alt="Default Profile Picture">
+{% endif %}
+<p>{{ profile.bio }}</p>
+<a href="{% url 'edit_profile' %}">Edit Profile</a>

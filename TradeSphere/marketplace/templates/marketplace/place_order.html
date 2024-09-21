@@ -1,0 +1,14 @@
+<!-- marketplace/templates/marketplace/place_order.html -->
+{% extends 'marketplace/base.html' %}
+
+{% block title %}Place Order{% endblock %}
+
+{% block content %}
+<h1>Order {{ product.name }}</h1>
+
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Place Order</button>
+</form>
+{% endblock %}

@@ -1,0 +1,10 @@
+<!-- marketplace/templates/marketplace/order_success.html -->
+{% extends 'marketplace/base.html' %}
+
+{% block title %}Order Successful{% endblock %}
+
+{% block content %}
+<h1>Your Order Has Been Placed!</h1>
+<p>Thank you for your purchase. You will receive a confirmation email shortly.</p>
+<a href="{% url 'homepage' %}">Return to Homepage</a>
+{% endblock %}

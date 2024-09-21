@@ -1,0 +1,21 @@
+<!-- marketplace/templates/marketplace/user_orders.html -->
+{% extends 'marketplace/base.html' %}
+
+{% block title %}My Orders{% endblock %}
+
+{% block content %}
+<h1>Your Orders</h1>
+
+<ul>
+    {% for order in orders %}
+        <li>
+            <h3>{{ order.product.name }}</h3>
+            <p>Quantity: {{ order.quantity }}</p>
+            <p>Total Price: ${{ order.total_price }}</p>
+            <p>Ordered on: {{ order.created_at }}</p>
+        </li>
+    {% empty %}
+        <li>You have not placed any orders yet.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

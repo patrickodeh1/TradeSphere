@@ -1,0 +1,33 @@
+.search-form {
+    display: flex;
+    margin-bottom: 20px;
+}
+
+.search-input,
+.category-select,
+.search-button {
+    margin-right: 10px;
+}
+
+.product-list {
+    margin-top: 20px;
+}
+
+.product-item {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+
+.product-image {
+    max-width: 100px;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.view-details {
+    display: inline-block;
+    margin-top: 10px;
+    text-decoration: underline;
+    color: #007bff;
+}

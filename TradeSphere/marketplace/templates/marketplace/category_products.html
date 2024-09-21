@@ -1,0 +1,22 @@
+<!-- marketplace/templates/marketplace/category_products.html -->
+{% extends 'marketplace/base.html' %}
+
+{% block title %}{{ category.name }} Products{% endblock %}
+
+{% block content %}
+<h1>Products in {{ category.name }}</h1>
+
+<ul>
+    {% for product in products %}
+        <li>
+            <h3>{{ product.name }}</h3>
+            <p>Price: ${{ product.price }}</p>
+            <a href="{% url 'product_detail' product.id %}">View Details</a>
+        </li>
+    {% empty %}
+        <li>No products found in this category.</li>
+    {% endfor %}
+</ul>
+
+<a href="{% url 'products' %}">Back to all products</a>
+{% endblock %}

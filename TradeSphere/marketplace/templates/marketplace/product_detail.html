@@ -1,0 +1,44 @@
+<!-- marketplace/templates/marketplace/product_detail.html -->
+{% extends 'marketplace/base.html' %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<h1>{{ product.name }}</h1>
+<p>Price: ${{ product.price }}</p>
+<p>{{ product.description }}</p>
+<img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 200px;">
+
+<h2>Reviews</h2>
+<ul>
+    {% for review in reviews %}
+        <li>
+            <strong>{{ review.user.username }}</strong>: {{ review.rating }} stars
+            <p>{{ review.comment }}</p>
+        </li>
+    {% empty %}
+        <li>No reviews yet.</li>
+    {% endfor %}
+</ul>
+
+<h3>Leave a Review</h3>
+<form method="post">
+    {% csrf_token %}
+    {{ review_form.as_p }}
+    <button type="submit">Submit Review</button>
+</form>
+
+<h3>Order this Product</h3>
+<form method="post">
+    {% csrf_token %}
+    {{ order_form.as_p }}
+    <button type="submit" name="order">Place Order</button>
+</form>
+
+<form method="post" action="{% url 'add_to_wishlist' product.id %}">
+</form>
+    {% csrf_token %}
+    <button type="submit">Add to Wishlist</button>
+</form>
+
+{% endblock %}

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ vendor.name }}</title>
+</head>
+<body>
+    <h1>{{ vendor.name }}</h1>
+    <h2>Products:</h2>
+    <ul>
+        {% for product in products %}
+            <li>{{ product.name }}</li>
+        {% empty %}
+            <li>No products available.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
