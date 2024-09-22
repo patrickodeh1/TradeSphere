@@ -94,7 +94,7 @@ def register(request):
         if form.is_valid():
             try:
                 user = form.save()
-
+                messages.success(request, 'Registration successful! You can now log in.')
                 # Create UserProfile for every user
                 profile_picture = form.cleaned_data.get('profile_picture')
                 bio = form.cleaned_data.get('bio')
@@ -221,6 +221,7 @@ def login_view(request):
 
             if user is not None:
                 login(request, user)
+                messages.success(request, 'Login successful!')
                 return redirect('homepage')  # Replace 'homepage' with the correct URL name
             else:
                 messages.error(request, 'Invalid username or password.')

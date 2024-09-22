@@ -4,6 +4,8 @@ body {
     margin: 0;
     padding: 0;
     background-color: #f9f9f9;
+    height: 100vh; /* Full height */
+    overflow-y: auto; /* Enable vertical scrolling */
 }
 
 h1, h2, h3 {
@@ -59,6 +61,7 @@ nav ul li a:hover {
     background-color: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
+    min-height: calc(100vh - 100px); /* Adjust for header/footer height */
 }
 
 /* Footer Styles */
@@ -243,4 +246,11 @@ form input[type="submit"]:hover {
 
 .edit-profile-form p {
     margin-bottom: 15px; /* Spacing between form fields */
+}
+
+/* Remove Bullet Points from Lists */
+ul {
+    list-style-type: none; /* Remove bullet points */
+    padding: 0; /* Remove padding */
+    margin: 0; /* Remove margin */
 }
