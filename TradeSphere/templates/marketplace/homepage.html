@@ -1,0 +1,49 @@
+<!-- marketplace/templates/marketplace/homepage.html -->
+{% extends 'marketplace/base.html' %}
+
+{% block title %}
+    Welcome to TradeSphere
+{% endblock %}
+
+{% block content %}
+<div class="homepage-container">
+    <section class="welcome-section">
+        <h1>Welcome to TradeSphere</h1>
+    </section>
+
+    <section class="featured-vendors">
+        <h2>Featured Vendors</h2>
+        <ul>
+            {% for vendor in featured_vendors %}
+                <li class="vendor-item">
+                    <h3>{{ vendor.name }}</h3>
+                    <p>Location: {{ vendor.location }}</p>
+                    <a href="{% url 'vendor_detail' vendor.pk %}" class="view-details-btn">View Details</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <section class="recent-products">
+        <h2>Recent Products</h2>
+        <ul>
+            {% for product in recent_products %}
+                <li class="product-item">
+                    <h3>{{ product.name }}</h3>
+                    <p>Price: {{ product.price }}</p>
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+                    <p>{{ product.description|truncatewords:20 }}</p>
+                    <a href="{% url 'product_detail' product.id %}" class="view-details-btn">View Details</a>
+                </li>
+            {% empty %}
+                <li>No recent products found.</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <section class="explore-more">
+        <h2>Explore More</h2>
+        <a href="{% url 'products' %}" class="explore-btn">View All Products</a>
+    </section>
+</div>
+{% endblock %}
