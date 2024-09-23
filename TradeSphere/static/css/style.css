@@ -6,10 +6,14 @@ body {
     background-color: #f9f9f9;
     height: 100vh; /* Full height */
     overflow-y: auto; /* Enable vertical scrolling */
+    display: flex;
+    flex-direction: column; /* Stack content vertically */
 }
 
 h1, h2, h3 {
     color: #333;
+    margin: 0; /* Remove default margins for better centering */
+    padding: 10px 0; /* Add some space around the text */
 }
 
 a {
@@ -56,12 +60,88 @@ nav ul li a:hover {
 /* Content Styles */
 .content {
     max-width: 1200px;
-    margin: 20px auto;
+    margin: 20px auto; /* Center content */
     padding: 20px;
     background-color: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
-    min-height: calc(100vh - 100px); /* Adjust for header/footer height */
+    flex: 1; /* Allow content to expand */
+    display: flex;
+    flex-direction: column; /* Stack sections vertically */
+    align-items: center; /* Center align sections */
+}
+
+/* Hero Section Styles */
+.hero-section {
+    position: relative;
+    text-align: center; /* Center align text */
+    color: white;
+    height: 100vh; /* Full height of viewport */
+    overflow: hidden; /* Ensure image does not overflow */
+}
+
+.hero-image {
+    width: 100%;
+    height: 100%; /* Full height of the hero section */
+    object-fit: cover; /* Cover the area while maintaining aspect ratio */
+    position: absolute; /* Position the image */
+    top: 0;
+    left: 0;
+    z-index: 0; /* Send image behind text */
+}
+
+.overlay {
+    position: relative;
+    z-index: 1; /* Ensure text is above the image */
+    display: flex;
+    flex-direction: column; /* Stack text vertically */
+    justify-content: center; /* Center text vertically */
+    align-items: center; /* Center text horizontally */
+    height: 100%; /* Full height of the overlay */
+    padding: 20px; /* Add some padding */
+}
+
+/* Featured Vendors and Recent Products Styles */
+.featured-vendors, .recent-products {
+    width: 100%; /* Full width */
+    text-align: center; /* Center align text */
+}
+
+ul {
+    list-style-type: none; /* Remove bullet points */
+    padding: 0; /* Remove padding */
+    margin: 0; /* Remove margin */
+}
+
+.vendor-item, .product-item {
+    background-color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 300px; /* Fixed width for products */
+    margin: 10px auto; /* Center align items */
+    text-align: center; /* Center text */
+}
+
+.product-item img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+}
+
+.view-details-btn {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+}
+
+.view-details-btn:hover {
+    background-color: #0056b3;
 }
 
 /* Footer Styles */
@@ -70,9 +150,6 @@ footer {
     color: white;
     text-align: center;
     padding: 10px 0;
-    position: fixed;
-    width: 100%;
-    bottom: 0;
 }
 
 footer ul {
@@ -105,7 +182,7 @@ footer ul li a:hover {
 /* Form Styles */
 form {
     max-width: 500px;
-    margin: 0 auto;
+    margin: 0 auto; /* Center form */
     padding: 20px;
     background-color: #fff;
     border-radius: 8px;
@@ -144,77 +221,6 @@ form input[type="submit"]:hover {
     background-color: #0056b3;
 }
 
-/* Profile Page Styles */
-.profile {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: white;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-}
-
-.profile h2 {
-    color: #333;
-    margin-bottom: 20px;
-}
-
-.profile p {
-    font-size: 16px;
-    margin-bottom: 10px;
-}
-
-.profile p strong {
-    font-weight: bold;
-}
-
-/* Products Page Styles */
-.products-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: center;
-}
-
-.product-item {
-    background-color: white;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 300px;
-    text-align: center;
-}
-
-.product-item img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 5px;
-}
-
-.product-item h3 {
-    color: #333;
-    margin-top: 15px;
-}
-
-.product-item p {
-    color: #666;
-}
-
-.product-item a {
-    display: inline-block;
-    margin-top: 10px;
-    padding: 10px 15px;
-    background-color: #007bff;
-    color: white;
-    border-radius: 5px;
-    text-decoration: none;
-    transition: background-color 0.3s;
-}
-
-.product-item a:hover {
-    background-color: #0056b3;
-}
-
 /* Edit Profile Styles */
 .edit-profile-form {
     background-color: #f9f9f9; /* Light background for the form */
@@ -248,9 +254,67 @@ form input[type="submit"]:hover {
     margin-bottom: 15px; /* Spacing between form fields */
 }
 
-/* Remove Bullet Points from Lists */
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .vendor-item, .product-item {
+        width: 90%; /* Adjust item width for smaller screens */
+    }
+}
+
+/* Hero Section Styles */
+.hero-section {
+    position: relative;
+    background-color: #0056b3; /* Fallback color */
+    text-align: center; /* Center align text */
+    color: white;
+    overflow: hidden; /* Ensure image does not overflow */
+}
+
+.hero-image {
+    width: 100%;
+    height: 100vh; /* Full height of the viewport */
+    object-fit: cover; /* Cover the area */
+    position: absolute; /* Position the image */
+    top: 0;
+    left: 0;
+    z-index: 0; /* Send image behind text */
+}
+
+.overlay {
+    position: relative;
+    z-index: 1; /* Ensure text is above the image */
+    padding: 50px 20px; /* Add padding for better visibility */
+}
+
+.welcome-text {
+    position: relative; /* Position text normally */
+    z-index: 1; /* Ensure text is above the image */
+    max-width: 800px; /* Limit width for readability */
+    margin: 0 auto; /* Center align text block */
+}
+
+/* Content Styles */
+.content {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center align all items */
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+/* Product and Vendor Styles */
 ul {
-    list-style-type: none; /* Remove bullet points */
-    padding: 0; /* Remove padding */
-    margin: 0; /* Remove margin */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center align list items */
+    padding: 0;
+}
+
+.vendor-item, .product-item {
+    text-align: center; /* Center align text for items */
+    margin-bottom: 20px; /* Space between items */
 }

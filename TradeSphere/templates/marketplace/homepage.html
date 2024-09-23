@@ -1,5 +1,5 @@
-<!-- marketplace/templates/marketplace/homepage.html -->
 {% extends 'marketplace/base.html' %}
+{% load static %}
 
 {% block title %}
     Welcome to TradeSphere
@@ -7,8 +7,16 @@
 
 {% block content %}
 <div class="homepage-container">
-    <section class="welcome-section">
-        <h1>Welcome to TradeSphere</h1>
+    <section class="hero-section">
+        <div class="overlay">
+            
+                <img src="{% static 'images/hero-image.jpg' %}" alt="Marketplace Hero" class="hero-image">
+            
+            <div class="welcome-text">
+                <h1>Welcome to TradeSphere</h1>
+                <p>Your trusted marketplace for local trading.</p>
+            </div>
+        </div>
     </section>
 
     <section class="featured-vendors">
