@@ -4,16 +4,17 @@ body {
     margin: 0;
     padding: 0;
     background-color: #f9f9f9;
-    height: 100vh; /* Full height */
-    overflow-y: auto; /* Enable vertical scrolling */
+    height: 100vh;
+    overflow-y: auto;
     display: flex;
-    flex-direction: column; /* Stack content vertically */
+    flex-direction: column;
+    
 }
 
 h1, h2, h3 {
     color: #333;
-    margin: 0; /* Remove default margins for better centering */
-    padding: 10px 0; /* Add some space around the text */
+    margin: 0;
+    padding: 20px 0; /* Increased padding */
 }
 
 a {
@@ -25,10 +26,15 @@ a:hover {
     color: #0056b3;
 }
 
+.container {
+    margin: 0;
+    padding: 0;
+}
+
 /* Navigation Bar Styles */
 nav {
     background-color: #333;
-    padding: 10px 0;
+    padding: 20px 0; /* Increased padding */
     text-align: center;
 }
 
@@ -37,17 +43,17 @@ nav ul {
     margin: 0;
     padding: 0;
     display: flex;
-    justify-content: center;
+    justify-content: center;   
 }
 
 nav ul li {
-    margin: 0 15px;
+    margin: 0 20px; /* Increased margin */
 }
 
 nav ul li a {
-    color: white;
+    color: white;   
     font-weight: bold;
-    padding: 10px 20px;
+    padding: 15px 25px; /* Increased padding */
     display: inline-block;
     transition: background-color 0.3s;
 }
@@ -59,80 +65,99 @@ nav ul li a:hover {
 
 /* Content Styles */
 .content {
-    max-width: 1200px;
-    margin: 20px auto; /* Center content */
-    padding: 20px;
+    max-width: 1400px; /* Increased from 1200px to 1400px */
+    margin: 0 auto;
+    padding: 10px; /* Add more padding for better spacing */
     background-color: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
-    flex: 1; /* Allow content to expand */
-    display: flex;
-    flex-direction: column; /* Stack sections vertically */
-    align-items: center; /* Center align sections */
+    flex: 1;
+}
+
+
+/* Ensure it stretches to full width on smaller screens */
+@media (max-width: 1200px) {
+    .content {
+        max-width: 100%; /* Use most of the screen width */
+    }
+}
+
+.hero-section, .featured-vendors, .recent-products {
+    width: 100%; /* Stretch sections to full width */
+    max-width: 100%; /* Ensure no width restrictions */
+    margin: 0;
+    padding: 10px; /* Keep reasonable padding */
 }
 
 /* Hero Section Styles */
 .hero-section {
     position: relative;
-    text-align: center; /* Center align text */
+    background-color: #0056b3; /* Fallback color */
+    text-align: center;
     color: white;
-    height: 100vh; /* Full height of viewport */
-    overflow: hidden; /* Ensure image does not overflow */
+    overflow: hidden;
+    width: 100%;
+    height: 60vh;
+    padding: 0px;
 }
 
 .hero-image {
     width: 100%;
-    height: 100%; /* Full height of the hero section */
-    object-fit: cover; /* Cover the area while maintaining aspect ratio */
-    position: absolute; /* Position the image */
+    height:60vh;
+    object-fit: cover;
+    position: absolute;
     top: 0;
     left: 0;
-    z-index: 0; /* Send image behind text */
+    z-index: 0;
 }
 
 .overlay {
     position: relative;
-    z-index: 1; /* Ensure text is above the image */
-    display: flex;
-    flex-direction: column; /* Stack text vertically */
-    justify-content: center; /* Center text vertically */
-    align-items: center; /* Center text horizontally */
-    height: 100%; /* Full height of the overlay */
-    padding: 20px; /* Add some padding */
+    z-index: 1;
+    padding: 150px 200px; /* Increased padding */
+}
+
+.welcome-text {
+    position: relative;
+    z-index: 1;
+    max-width: 1000px;
+    margin: 0 auto;
 }
 
 /* Featured Vendors and Recent Products Styles */
 .featured-vendors, .recent-products {
-    width: 100%; /* Full width */
-    text-align: center; /* Center align text */
+    width:100%;
+    text-align: center;
 }
 
 ul {
-    list-style-type: none; /* Remove bullet points */
-    padding: 0; /* Remove padding */
-    margin: 0; /* Remove margin */
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap; /* Allow items to wrap to the next line */
+    justify-content: center;
 }
 
 .vendor-item, .product-item {
     background-color: white;
-    padding: 15px;
+    padding: 10px; /* Increased padding */
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 300px; /* Fixed width for products */
-    margin: 10px auto; /* Center align items */
-    text-align: center; /* Center text */
+    box-shadow: 0 10px 13px rgba(0, 0, 0, 0.1);
+    margin: 5px; /* Increased margin */
+    text-align: center;
 }
 
 .product-item img {
-    max-width: 100%;
+    width: 300px;
     height: auto;
-    border-radius: 5px;
+    border-radius: 50px;
 }
 
 .view-details-btn {
     display: inline-block;
-    margin-top: 10px;
-    padding: 10px 15px;
+    margin-top: 15px; /* Increased margin */
+    padding: 15px 20px; /* Increased padding */
     background-color: #007bff;
     color: white;
     border-radius: 5px;
@@ -149,7 +174,7 @@ footer {
     background-color: #333;
     color: white;
     text-align: center;
-    padding: 10px 0;
+    padding: 20px 0; /* Increased padding */
 }
 
 footer ul {
@@ -161,13 +186,13 @@ footer ul {
 }
 
 footer ul li {
-    margin: 0 10px;
+    margin: 0 15px;
 }
 
 footer ul li a {
     color: white;
     font-weight: bold;
-    padding: 5px 10px;
+    padding: 10px 20px; /* Increased padding */
     transition: color 0.3s;
 }
 
@@ -176,14 +201,14 @@ footer ul li a:hover {
 }
 
 .footer-content {
-    margin-bottom: 10px;
+    margin-bottom: 20px; /* Increased margin */
 }
 
 /* Form Styles */
 form {
-    max-width: 500px;
-    margin: 0 auto; /* Center form */
-    padding: 20px;
+    max-width: 600px; /* Increased max-width */
+    margin: 0 auto;
+    padding: 30px; /* Increased padding */
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -191,7 +216,7 @@ form {
 
 form label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 10px; /* Increased margin */
     font-weight: bold;
     color: #333;
 }
@@ -202,15 +227,15 @@ form input[type="password"],
 form input[type="submit"],
 form select {
     width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
+    padding: 15px; /* Increased padding */
+    margin-bottom: 20px; /* Increased margin */
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 16px;
 }
 
 form input[type="submit"] {
-    background-color: #007bff;
+    background-color: #007bff;   
     color: white;
     border: none;
     cursor: pointer;
@@ -223,98 +248,54 @@ form input[type="submit"]:hover {
 
 /* Edit Profile Styles */
 .edit-profile-form {
-    background-color: #f9f9f9; /* Light background for the form */
-    padding: 20px;
+    background-color: #f9f9f9;
+    padding: 30px; /* Increased padding */
     border-radius: 10px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     max-width: 600px;
-    margin: 20px auto; /* Center the form */
+    margin: 20px auto;
 }
 
 .edit-profile-form h1 {
-    color: #0056b3; /* Dark blue color for the heading */
-    margin-bottom: 20px;
+    color: #0056b3;
+    margin-bottom: 30px; /* Increased margin */
 }
 
 .edit-profile-form button {
-    background-color: #0056b3; /* Button color */
+    background-color: #0056b3;
     color: white;
     border: none;
-    padding: 10px 15px;
+    padding: 15px 20px; /* Increased padding */
     border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
 }
 
 .edit-profile-form button:hover {
-    background-color: #004494; /* Darker blue on hover */
+    background-color: #004494;
 }
 
 .edit-profile-form p {
-    margin-bottom: 15px; /* Spacing between form fields */
+    margin-bottom: 20px; /* Increased margin */
 }
 
 /* Responsive Styles */
 @media (max-width: 768px) {
-    .vendor-item, .product-item {
-        width: 90%; /* Adjust item width for smaller screens */
+    nav ul {
+        display: none; /* Hide navigation menu on small screens */
     }
-}
 
-/* Hero Section Styles */
-.hero-section {
-    position: relative;
-    background-color: #0056b3; /* Fallback color */
-    text-align: center; /* Center align text */
-    color: white;
-    overflow: hidden; /* Ensure image does not overflow */
-}
+    nav ul.show {
+        display: block; /* Show navigation menu when clicked */
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: #333;
+        padding: 20px; /* Increased padding */
+    }
 
-.hero-image {
-    width: 100%;
-    height: 100vh; /* Full height of the viewport */
-    object-fit: cover; /* Cover the area */
-    position: absolute; /* Position the image */
-    top: 0;
-    left: 0;
-    z-index: 0; /* Send image behind text */
-}
-
-.overlay {
-    position: relative;
-    z-index: 1; /* Ensure text is above the image */
-    padding: 50px 20px; /* Add padding for better visibility */
-}
-
-.welcome-text {
-    position: relative; /* Position text normally */
-    z-index: 1; /* Ensure text is above the image */
-    max-width: 800px; /* Limit width for readability */
-    margin: 0 auto; /* Center align text block */
-}
-
-/* Content Styles */
-.content {
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Center align all items */
-    max-width: 1200px;
-    margin: 20px auto;
-    padding: 20px;
-    background-color: white;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-}
-
-/* Product and Vendor Styles */
-ul {
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Center align list items */
-    padding: 0;
-}
-
-.vendor-item, .product-item {
-    text-align: center; /* Center align text for items */
-    margin-bottom: 20px; /* Space between items */
+    nav ul li {
+        margin: 0;
+    }
 }

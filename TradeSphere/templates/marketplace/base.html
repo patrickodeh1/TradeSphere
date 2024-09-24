@@ -12,13 +12,13 @@
         <ul>
             <li><a href="{% url 'homepage' %}">Home</a></li>
             <li><a href="{% url 'products' %}">Products</a></li>
-
             <!-- Show Register/Login if user is not logged in -->
             {% if not user.is_authenticated %}
                 <li><a href="{% url 'register' %}">Register</a></li>
                 <li><a href="{% url 'login' %}">Login</a></li>
             {% else %}
                 <!-- Show Profile/Logout if user is logged in -->
+                <li><a href="{% url 'vendor_dashboard' %}">Vendor Dashboard</a></li>
                 <li><a href="{% url 'profile' %}">Profile</a></li>
                 <li><a href="{% url 'logout' %}">Logout</a></li>
             {% endif %}

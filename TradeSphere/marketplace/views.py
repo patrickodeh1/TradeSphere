@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from .models import Product, Category, Wishlist, Vendor, UserProfile, Order, ProductReview
-from .forms import ProductSearchForm, UserRegistrationForm, LoginForm, UserProfileForm, OrderForm, ProductReviewForm
+from .forms import ProductSearchForm, ProductUploadForm, UserRegistrationForm, LoginForm, UserProfileForm, OrderForm, ProductReviewForm
 from django.views.generic import DetailView
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
@@ -88,13 +88,18 @@ class VendorDetailView(DetailView):
         context['products'] = self.object.products.all()  # Get all products related to this vendor
         return context
 
+from django.contrib import messages
+from django.db import IntegrityError
+from .forms import UserRegistrationForm
+from .models import UserProfile, Vendor
+
 def register(request):
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
             try:
-                user = form.save()
-                messages.success(request, 'Registration successful! You can now log in.')
+                user = form.save()  # Save the user
+
                 # Create UserProfile for every user
                 profile_picture = form.cleaned_data.get('profile_picture')
                 bio = form.cleaned_data.get('bio')
@@ -104,7 +109,14 @@ def register(request):
                     user_profile.profile_picture = profile_picture
                     user_profile.bio = bio
                     user_profile.save()
+
+                # Check if the user is a vendor and create a Vendor instance
+                if form.cleaned_data['user_type'] == 'vendor':
+                    Vendor.objects.create(user=user)  # Adjust if you have additional fields in Vendor
+
+                messages.success(request, 'Registration successful! You can now log in.')
                 return redirect('login')  # Adjust this to your login URL name
+
             except IntegrityError:
                 form.add_error(None, "A user profile already exists for this user.")
     else:
@@ -116,14 +128,34 @@ def register(request):
 def profile(request):
     return render(request, 'marketplace/profile.html', {'profile': request.user.profile})
 
+@login_required
 def vendor_dashboard(request):
-    if hasattr(request.user, 'vendor'):
-        vendor = request.user.vendor
+    vendor = getattr(request.user, 'vendor', None)  # Use getattr to avoid AttributeError
+    
+    if vendor:
         products = vendor.products.all()
-        return render(request, 'marketplace/vendor_dashboard.html', {'vendor': vendor, 'products': products})
-    else:
-        return redirect('home')  # Redirect if not a vendor
 
+        if request.method == 'POST':
+            form = ProductUploadForm(request.POST, request.FILES)
+            if form.is_valid():
+                product = form.save(commit=False)
+                product.vendor = vendor
+                product.save()
+                return redirect('vendor_dashboard')
+        else:
+            form = ProductUploadForm()
+
+        categories = Category.objects.all()
+        return render(request, 'marketplace/vendor_dashboard.html', {
+            'vendor': vendor,
+            'products': products,
+            'form': form,
+            'categories': categories
+        })
+    else:
+        message = "You are not a vendor. You can register as one to access the vendor dashboard."
+        return render(request, 'marketplace/vendor_dashboard.html', {'message': message})
+    
 @login_required
 def place_order(request, product_id):
     product = get_object_or_404(Product, id=product_id)

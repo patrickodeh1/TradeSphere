@@ -1,0 +1,54 @@
+{% extends 'marketplace/base.html' %}
+{% load static %}
+
+{% block title %}
+    Vendor Dashboard
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    {% if vendor %}
+        <h1>Welcome, {{ vendor.name }}</h1>
+
+        <section class="product-list">
+            <h2>Your Products</h2>
+            <ul>
+                {% for product in products %}
+                    <li>
+                        <h3>{{ product.name }}</h3>
+                        <p>Price: {{ product.price }}</p>
+                        <p>{{ product.description }}</p>
+                        {% if product.image %}
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+                        {% endif %}
+                    </li>
+                {% empty %}
+                    <li>No products uploaded yet.</li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <section class="upload-product">
+            <h2>Upload Product</h2>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.name.label }} {{ form.name }}<br>
+                {{ form.description.label }} {{ form.description }}<br>
+                {{ form.price.label }} {{ form.price }}<br>
+                {{ form.image.label }} {{ form.image }}<br>
+                <label for="category">Category:</label>
+                <select name="category" id="category">
+                    {% for category in categories %}
+                        <option value="{{ category.id }}">{{ category.name }}</option>
+                    {% endfor %}
+                </select><br>
+                <button type="submit">Upload</button>
+            </form>
+        </section>
+    {% else %}
+        <div class="alert alert-warning">
+            You are not a vendor. You can register as one to access the vendor dashboard.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

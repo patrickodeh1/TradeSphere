@@ -25,7 +25,6 @@ class Vendor(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)  # Link to the User model
     name = models.CharField(max_length=255)
     location = models.CharField(max_length=255)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
     description = models.TextField(blank=True)
     contact_email = models.EmailField()
     contact_phone = models.CharField(max_length=20, blank=True, null=True)
