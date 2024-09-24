@@ -1,6 +1,5 @@
-# marketplace/management/commands/populate_db.py
 from django.core.management.base import BaseCommand
-from marketplace.models import Vendor, Product, Category, ProductReview
+from marketplace.models import Vendor, Product, Category
 from django.contrib.auth.models import User
 from faker import Faker
 import random
@@ -10,12 +9,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         fake = Faker()
-
-        # Create or get the admin user
-        user, created = User.objects.get_or_create(username='admin')
-        if created:
-            user.set_password('admin')  # Set password using set_password to hash it
-            user.save()
 
         # Clear existing data
         Vendor.objects.all().delete()
@@ -33,10 +26,16 @@ class Command(BaseCommand):
 
         # Create vendors and their products
         for _ in range(10):  # Adjust the number of vendors as needed
+            # Create a unique user for each vendor
+            user = User.objects.create_user(
+                username=fake.user_name(),
+                password='password'  # You may want to hash this or set it to something more secure
+            )
+
             vendor = Vendor.objects.create(
                 name=fake.company(),
                 location=fake.city(),
-                user=user  # Provide the user instance
+                user=user  # Provide the unique user instance
             )
 
             # Create products for each vendor

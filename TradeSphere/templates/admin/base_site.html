@@ -1,0 +1,27 @@
+{% extends "admin/base.html" %}
+
+{% load static %}
+
+{% block title %}TradeSphere Admin{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">TradeSphere Admin</a></h1>
+{% endblock %}
+
+{% block nav-global %} {% endblock %}
+
+{% block content %}
+    <div class="dashboard-links">
+        <h2>Manage TradeSphere</h2>
+        <ul>
+            <li><a href="{% url 'admin:core_category_changelist' %}">Manage Categories</a></li>
+            <li><a href="{% url 'admin:core_product_changelist' %}">Manage Products</a></li>
+            <li><a href="{% url 'admin:core_vendor_changelist' %}">Manage Vendors</a></li>
+            <li><a href="{% url 'admin:core_userprofile_changelist' %}">Manage User Profiles</a></li>
+            <li><a href="{% url 'admin:core_order_changelist' %}">Manage Orders</a></li>
+            <li><a href="{% url 'admin:core_wishlist_changelist' %}">Manage Wishlists</a></li>
+            <li><a href="{% url 'admin:core_productreview_changelist' %}">Manage Product Reviews</a></li>
+        </ul>
+    </div>
+    {{ block.super }}
+{% endblock %}

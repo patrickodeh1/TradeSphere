@@ -149,9 +149,9 @@ ul {
 }
 
 .product-item img {
-    width: 300px;
+    width: 100px;
     height: auto;
-    border-radius: 50px;
+    border-radius: 5px;
 }
 
 .view-details-btn {

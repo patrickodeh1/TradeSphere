@@ -1,6 +1,10 @@
 from django.contrib import admin
 from .models import Category, Product, Vendor, ProductReview, Order, UserProfile, Wishlist
 
+admin.site.site_header = "TradeSphere Administration"
+admin.site.site_title = "TradeSphere Admin Portal"
+admin.site.index_title = "Welcome to TradeSphere Admin"
+
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'description')
