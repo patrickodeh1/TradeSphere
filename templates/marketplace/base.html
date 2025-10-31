@@ -4,42 +4,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}TradeSphere{% endblock %}</title>
+    <title>{% block title %}TradeSphere - Your Local Marketplace{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
+    <!-- Navigation -->
     <nav>
-        <ul>
-            <li><a href="{% url 'homepage' %}">Home</a></li>
-            <li><a href="{% url 'products' %}">Products</a></li>
-            <!-- Show Register/Login if user is not logged in -->
-            {% if not user.is_authenticated %}
-                <li><a href="{% url 'register' %}">Register</a></li>
-                <li><a href="{% url 'login' %}">Login</a></li>
-            {% else %}
-                <!-- Show Profile/Logout if user is logged in -->
-                <li><a href="{% url 'vendor_dashboard' %}">Vendor Dashboard</a></li>
-                <li><a href="{% url 'profile' %}">Profile</a></li>
-                <li><a href="{% url 'logout' %}">Logout</a></li>
-            {% endif %}
-        </ul>
+        <div class="nav-container">
+            <a href="{% url 'homepage' %}" class="nav-logo">
+                <i class="fas fa-store"></i> TradeSphere
+            </a>
+            
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="{% url 'homepage' %}"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="{% url 'products' %}"><i class="fas fa-shopping-bag"></i> Products</a></li>
+                
+                {% if user.is_authenticated %}
+                    <li class="nav-cart">
+                        <a href="{% url 'cart' %}">
+                            <i class="fas fa-shopping-cart"></i> Cart
+                            {% if user.cart.total_items > 0 %}
+                                <span class="cart-badge">{{ user.cart.total_items }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    <li><a href="{% url 'view_wishlist' %}"><i class="fas fa-heart"></i> Wishlist</a></li>
+                    <li><a href="{% url 'user_orders' %}"><i class="fas fa-box"></i> Orders</a></li>
+                    
+                    {% if user.vendor %}
+                        <li><a href="{% url 'vendor_dashboard' %}"><i class="fas fa-dashboard"></i> Dashboard</a></li>
+                    {% endif %}
+                    
+                    <li><a href="{% url 'profile' %}"><i class="fas fa-user"></i> Profile</a></li>
+                    <li><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                {% else %}
+                    <li><a href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+                    <li><a href="{% url 'register' %}" class="btn btn-primary btn-sm">Get Started</a></li>
+                {% endif %}
+            </ul>
+        </div>
     </nav>
-    
-    <div class="content">
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="container">
+            <ul class="messages">
+                {% for message in messages %}
+                    <li class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main>
         {% block content %}
         {% endblock %}
-    </div>
-</body>
-<footer>
-    <div class="footer-content">
-        <p>&copy; {{ current_year }} TradeSphere. All rights reserved.</p>
-        <ul>
-            <li><a href="{% url 'about' %}">About Us</a></li>
-            <li><a href="{% url 'contact' %}">Contact</a></li>
-            <li><a href="{% url 'privacy_policy' %}">Privacy Policy</a></li>
-            <li><a href="{% url 'terms_of_service' %}">Terms of Service</a></li>
-        </ul>
-    </div>
-</footer>
+    </main>
 
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3><i class="fas fa-store"></i> TradeSphere</h3>
+                <p>Your trusted marketplace for local trading. Connect with buyers and sellers in your community.</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul class="footer-links">
+                    <li><a href="{% url 'about' %}">About Us</a></li>
+                    <li><a href="{% url 'contact' %}">Contact</a></li>
+                    <li><a href="{% url 'products' %}">Browse Products</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Legal</h3>
+                <ul class="footer-links">
+                    <li><a href="{% url 'privacy_policy' %}">Privacy Policy</a></li>
+                    <li><a href="{% url 'terms_of_service' %}">Terms of Service</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Connect With Us</h3>
+                <div style="font-size: 1.5rem; margin-top: 1rem;">
+                    <a href="#" style="color: white; margin-right: 1rem;"><i class="fab fa-facebook"></i></a>
+                    <a href="#" style="color: white; margin-right: 1rem;"><i class="fab fa-twitter"></i></a>
+                    <a href="#" style="color: white; margin-right: 1rem;"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; {{ current_year }} TradeSphere. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        function toggleMobileMenu() {
+            const navMenu = document.getElementById('navMenu');
+            navMenu.classList.toggle('active');
+        }
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
 </html>

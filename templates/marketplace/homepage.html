@@ -1,57 +1,159 @@
 {% extends 'marketplace/base.html' %}
 {% load static %}
 
-{% block title %}
-    Welcome to TradeSphere
-{% endblock %}
-
 {% block content %}
-<div class="homepage-container">
-    <section class="hero-section">
-        <div class="overlay">
-            
-                <img src="{% static 'images/hero-image.jpg' %}" alt="Marketplace Hero" class="hero-image">
-            
-            <div class="welcome-text">
-                <h1>Welcome to TradeSphere</h1>
-                <p>Your trusted marketplace for local trading.</p>
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>Welcome to TradeSphere</h1>
+        <p>Discover amazing products from local vendors. Shop, sell, and connect with your community.</p>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{% url 'products' %}" class="btn btn-secondary" style="font-size: 1.125rem; padding: 1rem 2rem;">
+                <i class="fas fa-shopping-bag"></i> Start Shopping
+            </a>
+            {% if not user.is_authenticated %}
+                <a href="{% url 'register' %}" class="btn btn-outline" style="font-size: 1.125rem; padding: 1rem 2rem; color: white; border-color: white;">
+                    <i class="fas fa-user-plus"></i> Become a Vendor
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Categories -->
+{% if categories %}
+<section class="container">
+    <h2 class="text-center mb-4" style="font-size: 2rem; font-weight: 700;">Shop by Category</h2>
+    <div class="grid grid-3">
+        {% for category in categories %}
+            <a href="{% url 'products' %}?category={{ category.id }}" class="card" style="text-decoration: none; color: inherit;">
+                <div class="card-body text-center">
+                    <i class="fas fa-tag" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                    <h3 class="card-title">{{ category.name }}</h3>
+                    <p class="card-text">{{ category.description|truncatewords:10 }}</p>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Featured Products -->
+{% if featured_products %}
+<section class="container">
+    <h2 class="text-center mb-4" style="font-size: 2rem; font-weight: 700;">Featured Products</h2>
+    <div class="grid grid-4">
+        {% for product in featured_products %}
+            <div class="card product-card">
+                {% if product.has_discount %}
+                    <div class="product-badge">-{{ product.discount_percentage }}%</div>
+                {% endif %}
+                
+                <a href="{% url 'product_detail' product.id %}">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="card-img">
+                    {% else %}
+                        <div class="card-img" style="background: var(--light-gray); display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-image" style="font-size: 3rem; color: var(--gray);"></i>
+                        </div>
+                    {% endif %}
+                </a>
+                
+                <div class="card-body">
+                    <h3 class="card-title">{{ product.name|truncatewords:5 }}</h3>
+                    <p class="card-text">{{ product.description|truncatewords:10 }}</p>
+                    <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                        <span class="product-price">₦{{ product.price }}</span>
+                        {% if product.compare_at_price %}
+                            <span class="product-old-price">₦{{ product.compare_at_price }}</span>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'product_detail' product.id %}" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-eye"></i> View Details
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Recent Products -->
+{% if recent_products %}
+<section class="container">
+    <h2 class="text-center mb-4" style="font-size: 2rem; font-weight: 700;">New Arrivals</h2>
+    <div class="grid grid-4">
+        {% for product in recent_products %}
+            <div class="card product-card">
+                <a href="{% url 'product_detail' product.id %}">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="card-img">
+                    {% else %}
+                        <div class="card-img" style="background: var(--light-gray); display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-image" style="font-size: 3rem; color: var(--gray);"></i>
+                        </div>
+                    {% endif %}
+                </a>
+                
+                <div class="card-body">
+                    <h3 class="card-title">{{ product.name|truncatewords:5 }}</h3>
+                    <p class="card-text">{{ product.description|truncatewords:10 }}</p>
+                    <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                        <span class="product-price">₦{{ product.price }}</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 0.5rem;">
+                        <a href="{% url 'product_detail' product.id %}" class="btn btn-primary">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                        {% if user.is_authenticated %}
+                            <form method="post" action="{% url 'add_to_cart' product.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-secondary">
+                                    <i class="fas fa-cart-plus"></i>
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <div class="text-center mt-4">
+        <a href="{% url 'products' %}" class="btn btn-outline" style="padding: 1rem 2rem;">
+            View All Products <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+</section>
+{% endif %}
+
+<!-- Why Choose Us -->
+<section class="container">
+    <h2 class="text-center mb-4" style="font-size: 2rem; font-weight: 700;">Why Choose TradeSphere?</h2>
+    <div class="grid grid-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-shield-alt" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                <h3 class="card-title">Secure Transactions</h3>
+                <p class="card-text">Shop with confidence using our secure payment system powered by Paystack.</p>
             </div>
         </div>
-    </section>
-
-    <section class="featured-vendors">
-        <h2>Featured Vendors</h2>
-        <ul>
-            {% for vendor in featured_vendors %}
-                <li class="vendor-item">
-                    <h3>{{ vendor.name }}</h3>
-                    <p>Location: {{ vendor.location }}</p>
-                    <a href="{% url 'vendor_detail' vendor.pk %}" class="view-details-btn">View Details</a>
-                </li>
-            {% endfor %}
-        </ul>
-    </section>
-
-    <section class="recent-products">
-        <h2>Recent Products</h2>
-        <ul>
-            {% for product in recent_products %}
-                <li class="product-item">
-                    <h3>{{ product.name }}</h3>
-                    <p>Price: {{ product.price }}</p>
-                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
-                    <p>{{ product.description|truncatewords:20 }}</p>
-                    <a href="{% url 'product_detail' product.id %}" class="view-details-btn">View Details</a>
-                </li>
-            {% empty %}
-                <li>No recent products found.</li>
-            {% endfor %}
-        </ul>
-    </section>
-
-    <section class="explore-more">
-        <h2>Explore More</h2>
-        <a href="{% url 'products' %}" class="explore-btn">View All Products</a>
-    </section>
-</div>
+        
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-truck" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                <h3 class="card-title">Fast Delivery</h3>
+                <p class="card-text">Get your products delivered quickly and safely to your doorstep.</p>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-headset" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                <h3 class="card-title">24/7 Support</h3>
+                <p class="card-text">Our customer support team is always here to help you with any questions.</p>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}

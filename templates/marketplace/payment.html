@@ -1,0 +1,57 @@
+{% extends 'marketplace/base.html' %}
+
+{% block title %}Order Successful - TradeSphere{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div style="max-width: 700px; margin: 0 auto; text-align: center;">
+        <div class="card">
+            <div class="card-body" style="padding: 3rem;">
+                <div style="width: 100px; height: 100px; background: var(--secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem;">
+                    <i class="fas fa-check" style="font-size: 3rem; color: white;"></i>
+                </div>
+                
+                <h1 class="mb-3">Order Placed Successfully!</h1>
+                <p class="text-gray mb-4" style="font-size: 1.125rem;">
+                    Thank you for your purchase. Your order has been received and is being processed.
+                </p>
+                
+                <div style="background: var(--light-gray); padding: 1.5rem; border-radius: 0.75rem; margin-bottom: 2rem; text-align: left;">
+                    <h3 class="mb-3">Order Details</h3>
+                    <div style="display: grid; gap: 0.75rem;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span class="text-gray">Order Number:</span>
+                            <span class="font-semibold">{{ order.order_number }}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span class="text-gray">Date:</span>
+                            <span class="font-semibold">{{ order.created_at|date:"F d, Y" }}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span class="text-gray">Total:</span>
+                            <span class="font-semibold" style="color: var(--primary);">₦{{ order.total_price }}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span class="text-gray">Payment Status:</span>
+                            <span class="font-semibold" style="color: var(--secondary);">Paid</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <p class="text-gray mb-4">
+                    <i class="fas fa-envelope"></i> A confirmation email has been sent to {{ order.email }}
+                </p>
+                
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <a href="{% url 'order_detail' order.id %}" class="btn btn-primary">
+                        <i class="fas fa-receipt"></i> View Order Details
+                    </a>
+                    <a href="{% url 'products' %}" class="btn btn-outline">
+                        <i class="fas fa-shopping-bag"></i> Continue Shopping
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

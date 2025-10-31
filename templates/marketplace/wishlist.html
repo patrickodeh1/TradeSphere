@@ -1,19 +1,72 @@
-<!-- marketplace/templates/marketplace/wishlist.html -->
 {% extends 'marketplace/base.html' %}
 
-{% block title %}Your Wishlist{% endblock %}
+{% block title %}My Wishlist - TradeSphere{% endblock %}
 
 {% block content %}
-<h1>Your Wishlist</h1>
-<ul>
-    {% for item in wishlist_items %}
-        <li>
-            <h3>{{ item.product.name }}</h3>
-            <p>Price: {{ item.product.price }}</p>
-            <a href="{% url 'product_detail' item.product.id %}">View Product</a>
-        </li>
-    {% empty %}
-        <li>Your wishlist is empty.</li>
-    {% endfor %}
-</ul>
+<div class="container">
+    <h1 class="mb-4"><i class="fas fa-heart"></i> My Wishlist</h1>
+    
+    {% if wishlist_items %}
+        <div class="grid grid-4">
+            {% for item in wishlist_items %}
+                <div class="card product-card fade-in">
+                    <a href="{% url 'product_detail' item.product.id %}">
+                        {% if item.product.image %}
+                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="card-img">
+                        {% else %}
+                            <div class="card-img" style="background: var(--light-gray); display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-image" style="font-size: 3rem; color: var(--gray);"></i>
+                            </div>
+                        {% endif %}
+                    </a>
+                    
+                    <div class="card-body">
+                        <a href="{% url 'product_detail' item.product.id %}" style="text-decoration: none; color: inherit;">
+                            <h3 class="card-title">{{ item.product.name|truncatewords:5 }}</h3>
+                        </a>
+                        <p class="card-text">{{ item.product.description|truncatewords:10 }}</p>
+                        <p class="product-price">₦{{ item.product.price|floatformat:0 }}</p>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr auto; gap: 0.5rem;">
+                            {% if item.product.stock > 0 %}
+                                <form method="post" action="{% url 'add_to_cart' item.product.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                                        <i class="fas fa-cart-plus"></i> Add to Cart
+                                    </button>
+                                </form>
+                            {% else %}
+                                <button class="btn" disabled style="width: 100%; background: var(--gray); color: white;">
+                                    Out of Stock
+                                </button>
+                            {% endif %}
+                            
+                            <form method="post" action="{% url 'add_to_wishlist' item.product.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline" style="padding: 0.75rem 1rem;">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <p class="text-gray mt-2" style="font-size: 0.875rem;">
+                            <i class="fas fa-clock"></i> Added {{ item.added_at|date:"M d, Y" }}
+                        </p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card">
+            <div class="card-body text-center" style="padding: 4rem 2rem;">
+                <i class="fas fa-heart-broken" style="font-size: 5rem; color: var(--gray); margin-bottom: 1rem;"></i>
+                <h2 class="mb-3">Your wishlist is empty</h2>
+                <p class="text-gray mb-4">Start adding products to your wishlist to save them for later.</p>
+                <a href="{% url 'products' %}" class="btn btn-primary">
+                    <i class="fas fa-shopping-bag"></i> Browse Products
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
 {% endblock %}

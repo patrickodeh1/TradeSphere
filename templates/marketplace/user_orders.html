@@ -1,21 +1,90 @@
-<!-- marketplace/templates/marketplace/user_orders.html -->
 {% extends 'marketplace/base.html' %}
 
-{% block title %}My Orders{% endblock %}
+{% block title %}My Orders - TradeSphere{% endblock %}
 
 {% block content %}
-<h1>Your Orders</h1>
-
-<ul>
-    {% for order in orders %}
-        <li>
-            <h3>{{ order.product.name }}</h3>
-            <p>Quantity: {{ order.quantity }}</p>
-            <p>Total Price: ${{ order.total_price }}</p>
-            <p>Ordered on: {{ order.created_at }}</p>
-        </li>
-    {% empty %}
-        <li>You have not placed any orders yet.</li>
-    {% endfor %}
-</ul>
+<div class="container">
+    <h1 class="mb-4"><i class="fas fa-box"></i> My Orders</h1>
+    
+    {% if orders %}
+        <div style="display: grid; gap: 1.5rem;">
+            {% for order in orders %}
+                <div class="card">
+                    <div class="card-body">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
+                            <div>
+                                <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">
+                                    Order #{{ order.order_number }}
+                                </h3>
+                                <p class="text-gray">
+                                    <i class="fas fa-calendar"></i> Placed on {{ order.created_at|date:"F d, Y" }}
+                                </p>
+                            </div>
+                            
+                            <div style="text-align: right;">
+                                <span style="display: inline-block; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; font-size: 0.875rem;
+                                    {% if order.status == 'delivered' %}background: var(--secondary); color: white;
+                                    {% elif order.status == 'cancelled' %}background: var(--danger); color: white;
+                                    {% elif order.status == 'shipped' %}background: var(--warning); color: white;
+                                    {% else %}background: var(--light-gray); color: var(--dark);{% endif %}">
+                                    <i class="fas fa-circle" style="font-size: 0.5rem;"></i> {{ order.get_status_display }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; gap: 1rem; margin-bottom: 1.5rem;">
+                            {% for item in order.items.all|slice:":3" %}
+                                <div style="display: flex; gap: 1rem; align-items: center;">
+                                    {% if item.product and item.product.image %}
+                                        <img src="{{ item.product.image.url }}" alt="{{ item.product_name }}" 
+                                             style="width: 60px; height: 60px; object-fit: cover; border-radius: 0.5rem;">
+                                    {% else %}
+                                        <div style="width: 60px; height: 60px; background: var(--light-gray); border-radius: 0.5rem; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-image" style="color: var(--gray);"></i>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <div style="flex: 1;">
+                                        <p style="font-weight: 600;">{{ item.product_name }}</p>
+                                        <p class="text-gray" style="font-size: 0.875rem;">Qty: {{ item.quantity }} × ₦{{ item.product_price|floatformat:0 }}</p>
+                                    </div>
+                                    
+                                    <p style="font-weight: 600;">₦{{ item.total_price|floatformat:0 }}</p>
+                                </div>
+                            {% endfor %}
+                            
+                            {% if order.items.count > 3 %}
+                                <p class="text-gray" style="font-size: 0.875rem;">
+                                    + {{ order.items.count|add:"-3" }} more item{{ order.items.count|add:"-3"|pluralize }}
+                                </p>
+                            {% endif %}
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+                            <div>
+                                <p class="text-gray" style="font-size: 0.875rem;">Total Amount</p>
+                                <p style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">₦{{ order.total_price|floatformat:0 }}</p>
+                            </div>
+                            
+                            <a href="{% url 'order_detail' order.id %}" class="btn btn-primary">
+                                <i class="fas fa-eye"></i> View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card">
+            <div class="card-body text-center" style="padding: 4rem 2rem;">
+                <i class="fas fa-box-open" style="font-size: 5rem; color: var(--gray); margin-bottom: 1rem;"></i>
+                <h2 class="mb-3">No orders yet</h2>
+                <p class="text-gray mb-4">You haven't placed any orders yet. Start shopping now!</p>
+                <a href="{% url 'products' %}" class="btn btn-primary">
+                    <i class="fas fa-shopping-bag"></i> Browse Products
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
 {% endblock %}

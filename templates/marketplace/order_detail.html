@@ -1,0 +1,103 @@
+{% extends 'marketplace/base.html' %}
+
+{% block title %}Order #{{ order.order_number }} - TradeSphere{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4"><i class="fas fa-receipt"></i> Order #{{ order.order_number }}</h1>
+    
+    <div style="display: grid; grid-template-columns: 1fr 400px; gap: 2rem;">
+        <!-- Order Items -->
+        <div>
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h2 class="mb-3">Order Items</h2>
+                    
+                    {% for item in order.items.all %}
+                        <div style="display: flex; gap: 1rem; padding: 1rem 0; {% if not forloop.last %}border-bottom: 1px solid var(--border);{% endif %}">
+                            {% if item.product and item.product.image %}
+                                <img src="{{ item.product.image.url }}" alt="{{ item.product_name }}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 0.5rem;">
+                            {% else %}
+                                <div style="width: 80px; height: 80px; background: var(--light-gray); border-radius: 0.5rem; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-image" style="color: var(--gray);"></i>
+                                </div>
+                            {% endif %}
+                            
+                            <div style="flex: 1;">
+                                <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">{{ item.product_name }}</h3>
+                                <p class="text-gray">Quantity: {{ item.quantity }}</p>
+                                <p class="text-gray">Price: ₦{{ item.product_price }} each</p>
+                            </div>
+                            
+                            <div style="text-align: right;">
+                                <p class="font-semibold" style="font-size: 1.125rem;">₦{{ item.total_price }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="mb-3">Shipping Address</h2>
+                    <p>
+                        <strong>{{ order.full_name }}</strong><br>
+                        {{ order.shipping_address }}<br>
+                        {{ order.shipping_city }}, {{ order.shipping_state }} {{ order.shipping_postal_code }}<br>
+                        {{ order.shipping_country }}
+                    </p>
+                    <p class="mt-2">
+                        <strong>Phone:</strong> {{ order.phone }}<br>
+                        <strong>Email:</strong> {{ order.email }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Order Summary -->
+        <div>
+            <div class="checkout-summary mb-3">
+                <h2 class="mb-3">Order Summary</h2>
+                
+                <div class="summary-row">
+                    <span>Order Date</span>
+                    <span class="font-semibold">{{ order.created_at|date:"F d, Y" }}</span>
+                </div>
+                
+                <div class="summary-row">
+                    <span>Status</span>
+                    <span class="font-semibold" style="{% if order.status == 'delivered' %}color: var(--secondary);{% elif order.status == 'cancelled' %}color: var(--danger);{% else %}color: var(--warning);{% endif %}">
+                        {{ order.get_status_display }}
+                    </span>
+                </div>
+                
+                <div class="summary-row">
+                    <span>Payment Status</span>
+                    <span class="font-semibold" style="color: {% if order.payment_status == 'paid' %}var(--secondary){% else %}var(--warning){% endif %};">
+                        {{ order.payment_status|title }}
+                    </span>
+                </div>
+                
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span class="font-semibold">₦{{ order.subtotal }}</span>
+                </div>
+                
+                <div class="summary-row">
+                    <span>Shipping Fee</span>
+                    <span class="font-semibold">₦{{ order.shipping_fee }}</span>
+                </div>
+                
+                <div class="summary-row" style="border-bottom: none;">
+                    <span class="summary-total">Total</span>
+                    <span class="summary-total">₦{{ order.total_price }}</span>
+                </div>
+            </div>
+            
+            <a href="{% url 'user_orders' %}" class="btn btn-outline" style="width: 100%;">
+                <i class="fas fa-arrow-left"></i> Back to Orders
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

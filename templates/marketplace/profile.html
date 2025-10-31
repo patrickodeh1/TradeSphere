@@ -1,24 +1,170 @@
 {% extends 'marketplace/base.html' %}
 
-{% block title %}
-Profile
-{% endblock %}
+{% block title %}My Profile - TradeSphere{% endblock %}
 
 {% block content %}
-<h1>Your Profile</h1>
-
-<!-- Add Edit Profile Link -->
-<a href="{% url 'edit_profile' %}" class="edit-profile-link">Edit Profile</a>
-<!-- Profile Picture -->
-{% if user.profile.profile_picture %}
-    <img src="{{ user.profile.profile_picture.url }}" alt="Profile Picture" class="profile-picture">
-{% else %}
-    <p>No profile picture uploaded.</p>
-{% endif %}
-
-<!-- Profile Details -->
-<p>Name: {{ user.username }}</p>
-<p>Email: {{ user.email }}</p>
-<!-- Add other profile fields as needed -->
-
+<div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h1><i class="fas fa-user"></i> My Profile</h1>
+        <a href="{% url 'edit_profile' %}" class="btn btn-primary">
+            <i class="fas fa-edit"></i> Edit Profile
+        </a>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: 350px 1fr; gap: 2rem;">
+        <!-- Profile Sidebar -->
+        <div>
+            <div class="card mb-3">
+                <div class="card-body text-center">
+                    {% if user.profile.profile_picture %}
+                        <img src="{{ user.profile.profile_picture.url }}" alt="{{ user.username }}" 
+                             style="width: 200px; height: 200px; object-fit: cover; border-radius: 50%; margin-bottom: 1rem; border: 4px solid var(--primary);">
+                    {% else %}
+                        <div style="width: 200px; height: 200px; background: var(--light-gray); border-radius: 50%; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; border: 4px solid var(--border);">
+                            <i class="fas fa-user" style="font-size: 5rem; color: var(--gray);"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <h2 style="margin-bottom: 0.5rem;">{{ user.get_full_name|default:user.username }}</h2>
+                    <p class="text-gray">@{{ user.username }}</p>
+                    
+                    {% if user.vendor %}
+                        <span style="display: inline-block; background: var(--primary); color: white; padding: 0.25rem 1rem; border-radius: 20px; font-size: 0.875rem; margin-top: 0.5rem;">
+                            <i class="fas fa-store"></i> Vendor
+                        </span>
+                    {% else %}
+                        <span style="display: inline-block; background: var(--secondary); color: white; padding: 0.25rem 1rem; border-radius: 20px; font-size: 0.875rem; margin-top: 0.5rem;">
+                            <i class="fas fa-user"></i> Customer
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <h3 style="font-size: 1.125rem; margin-bottom: 1rem;">Quick Links</h3>
+                    <div style="display: grid; gap: 0.5rem;">
+                        <a href="{% url 'user_orders' %}" style="display: flex; align-items: center; padding: 0.75rem; background: var(--light-gray); border-radius: 0.5rem; text-decoration: none; color: inherit;">
+                            <i class="fas fa-box" style="margin-right: 0.75rem; color: var(--primary);"></i>
+                            <span>My Orders</span>
+                        </a>
+                        <a href="{% url 'view_wishlist' %}" style="display: flex; align-items: center; padding: 0.75rem; background: var(--light-gray); border-radius: 0.5rem; text-decoration: none; color: inherit;">
+                            <i class="fas fa-heart" style="margin-right: 0.75rem; color: var(--danger);"></i>
+                            <span>Wishlist</span>
+                        </a>
+                        <a href="{% url 'cart' %}" style="display: flex; align-items: center; padding: 0.75rem; background: var(--light-gray); border-radius: 0.5rem; text-decoration: none; color: inherit;">
+                            <i class="fas fa-shopping-cart" style="margin-right: 0.75rem; color: var(--secondary);"></i>
+                            <span>Shopping Cart</span>
+                        </a>
+                        {% if user.vendor %}
+                            <a href="{% url 'vendor_dashboard' %}" style="display: flex; align-items: center; padding: 0.75rem; background: var(--light-gray); border-radius: 0.5rem; text-decoration: none; color: inherit;">
+                                <i class="fas fa-dashboard" style="margin-right: 0.75rem; color: var(--warning);"></i>
+                                <span>Vendor Dashboard</span>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Profile Content -->
+        <div>
+            <!-- Personal Information -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h2 class="mb-3"><i class="fas fa-info-circle"></i> Personal Information</h2>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <div>
+                            <label class="text-gray" style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem;">Username</label>
+                            <p style="font-weight: 600;">{{ user.username }}</p>
+                        </div>
+                        
+                        <div>
+                            <label class="text-gray" style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem;">Email</label>
+                            <p style="font-weight: 600;">{{ user.email }}</p>
+                        </div>
+                        
+                        <div>
+                            <label class="text-gray" style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem;">First Name</label>
+                            <p style="font-weight: 600;">{{ user.first_name|default:"Not set" }}</p>
+                        </div>
+                        
+                        <div>
+                            <label class="text-gray" style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem;">Last Name</label>
+                            <p style="font-weight: 600;">{{ user.last_name|default:"Not set" }}</p>
+                        </div>
+                        
+                        <div>
+                            <label class="text-gray" style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem;">Phone Number</label>
+                            <p style="font-weight: 600;">{{ user.profile.phone|default:"Not set" }}</p>
+                        </div>
+                        
+                        <div>
+                            <label class="text-gray" style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem;">Member Since</label>
+                            <p style="font-weight: 600;">{{ user.date_joined|date:"F Y" }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if user.profile.bio %}
+                        <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+                            <label class="text-gray" style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Bio</label>
+                            <p style="line-height: 1.6;">{{ user.profile.bio }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Shipping Address -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h2 class="mb-3"><i class="fas fa-map-marker-alt"></i> Shipping Address</h2>
+                    
+                    {% if user.profile.shipping_address %}
+                        <div style="padding: 1.5rem; background: var(--light-gray); border-radius: 0.75rem;">
+                            <p style="font-weight: 600; margin-bottom: 0.5rem;">{{ user.get_full_name|default:user.username }}</p>
+                            <p>{{ user.profile.shipping_address }}</p>
+                            <p>{{ user.profile.shipping_city }}, {{ user.profile.shipping_state }} {{ user.profile.shipping_postal_code }}</p>
+                            <p>{{ user.profile.shipping_country }}</p>
+                            {% if user.profile.phone %}
+                                <p style="margin-top: 0.5rem;"><i class="fas fa-phone"></i> {{ user.profile.phone }}</p>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i> No shipping address set. Please update your profile to add a shipping address.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Account Statistics -->
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="mb-3"><i class="fas fa-chart-bar"></i> Account Statistics</h2>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+                        <div class="text-center" style="padding: 1.5rem; background: var(--light-gray); border-radius: 0.75rem;">
+                            <i class="fas fa-box" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 0.5rem;"></i>
+                            <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem;">{{ user.orders.count }}</p>
+                            <p class="text-gray">Total Orders</p>
+                        </div>
+                        
+                        <div class="text-center" style="padding: 1.5rem; background: var(--light-gray); border-radius: 0.75rem;">
+                            <i class="fas fa-heart" style="font-size: 2.5rem; color: var(--danger); margin-bottom: 0.5rem;"></i>
+                            <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem;">{{ user.wishlists.count }}</p>
+                            <p class="text-gray">Wishlist Items</p>
+                        </div>
+                        
+                        <div class="text-center" style="padding: 1.5rem; background: var(--light-gray); border-radius: 0.75rem;">
+                            <i class="fas fa-star" style="font-size: 2.5rem; color: var(--warning); margin-bottom: 0.5rem;"></i>
+                            <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem;">{{ user.reviews.count }}</p>
+                            <p class="text-gray">Reviews Written</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

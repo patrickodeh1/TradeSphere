@@ -1,53 +1,200 @@
 {% extends 'marketplace/base.html' %}
-{% load static %}
 
-{% block title %}
-    Vendor Dashboard
-{% endblock %}
+{% block title %}Vendor Dashboard - TradeSphere{% endblock %}
 
 {% block content %}
-<div class="dashboard-container">
+<div class="container">
     {% if vendor %}
-        <h1>Welcome, {{ vendor.name }}</h1>
-
-        <section class="product-list">
-            <h2>Your Products</h2>
-            <ul>
-                {% for product in products %}
-                    <li>
-                        <h3>{{ product.name }}</h3>
-                        <p>Price: {{ product.price }}</p>
-                        <p>{{ product.description }}</p>
-                        {% if product.image %}
-                            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
-                        {% endif %}
-                    </li>
-                {% empty %}
-                    <li>No products uploaded yet.</li>
-                {% endfor %}
-            </ul>
-        </section>
-
-        <section class="upload-product">
-            <h2>Upload Product</h2>
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                {{ form.name.label }} {{ form.name }}<br>
-                {{ form.description.label }} {{ form.description }}<br>
-                {{ form.price.label }} {{ form.price }}<br>
-                {{ form.image.label }} {{ form.image }}<br>
-                <label for="category">Category:</label>
-                <select name="category" id="category">
-                    {% for category in categories %}
-                        <option value="{{ category.id }}">{{ category.name }}</option>
-                    {% endfor %}
-                </select><br>
-                <button type="submit">Upload</button>
-            </form>
-        </section>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <div>
+                <h1><i class="fas fa-store"></i> {{ vendor.name }}</h1>
+                <p class="text-gray">
+                    <i class="fas fa-map-marker-alt"></i> {{ vendor.location }}
+                </p>
+            </div>
+        </div>
+        
+        <!-- Stats Cards -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-boxes" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 0.5rem;"></i>
+                    <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem;">{{ products.count }}</p>
+                    <p class="text-gray">Total Products</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle" style="font-size: 2.5rem; color: var(--secondary); margin-bottom: 0.5rem;"></i>
+                    <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem;">{{ products|length }}</p>
+                    <p class="text-gray">Active Products</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-eye" style="font-size: 2.5rem; color: var(--warning); margin-bottom: 0.5rem;"></i>
+                    <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem;">0</p>
+                    <p class="text-gray">Total Views</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-star" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 0.5rem;"></i>
+                    <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem;">0</p>
+                    <p class="text-gray">Reviews</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Upload Product Form -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="mb-3"><i class="fas fa-plus-circle"></i> Upload New Product</h2>
+                
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Product Name</label>
+                            {{ form.name }}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Category</label>
+                            {{ form.category }}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Price (₦)</label>
+                            {{ form.price }}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Compare at Price (₦) - Optional</label>
+                            {{ form.compare_at_price }}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Stock Quantity</label>
+                            {{ form.stock }}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Product Image</label>
+                            {{ form.image }}
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        {{ form.description }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; cursor: pointer;">
+                            {{ form.is_featured }}
+                            <span style="margin-left: 0.5rem;">Mark as Featured Product</span>
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload"></i> Upload Product
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Products List -->
+        <div class="card">
+            <div class="card-body">
+                <h2 class="mb-3"><i class="fas fa-boxes"></i> Your Products</h2>
+                
+                {% if products %}
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid var(--border);">
+                                    <th style="padding: 1rem; text-align: left;">Product</th>
+                                    <th style="padding: 1rem; text-align: left;">Category</th>
+                                    <th style="padding: 1rem; text-align: right;">Price</th>
+                                    <th style="padding: 1rem; text-align: center;">Stock</th>
+                                    <th style="padding: 1rem; text-align: center;">Status</th>
+                                    <th style="padding: 1rem; text-align: center;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in products %}
+                                    <tr style="border-bottom: 1px solid var(--border);">
+                                        <td style="padding: 1rem;">
+                                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                                {% if product.image %}
+                                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" 
+                                                         style="width: 50px; height: 50px; object-fit: cover; border-radius: 0.5rem;">
+                                                {% else %}
+                                                    <div style="width: 50px; height: 50px; background: var(--light-gray); border-radius: 0.5rem; display: flex; align-items: center; justify-content: center;">
+                                                        <i class="fas fa-image" style="color: var(--gray);"></i>
+                                                    </div>
+                                                {% endif %}
+                                                <div>
+                                                    <p style="font-weight: 600;">{{ product.name }}</p>
+                                                    {% if product.is_featured %}
+                                                        <span style="background: var(--warning); color: white; padding: 0.125rem 0.5rem; border-radius: 10px; font-size: 0.75rem;">
+                                                            <i class="fas fa-star"></i> Featured
+                                                        </span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="padding: 1rem;">{{ product.category.name }}</td>
+                                        <td style="padding: 1rem; text-align: right; font-weight: 600;">₦{{ product.price|floatformat:0 }}</td>
+                                        <td style="padding: 1rem; text-align: center;">
+                                            <span style="{% if product.stock < 5 %}color: var(--danger);{% endif %} font-weight: 600;">
+                                                {{ product.stock }}
+                                            </span>
+                                        </td>
+                                        <td style="padding: 1rem; text-align: center;">
+                                            {% if product.is_active %}
+                                                <span style="color: var(--secondary); font-weight: 600;">
+                                                    <i class="fas fa-check-circle"></i> Active
+                                                </span>
+                                            {% else %}
+                                                <span style="color: var(--gray); font-weight: 600;">
+                                                    <i class="fas fa-times-circle"></i> Inactive
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td style="padding: 1rem; text-align: center;">
+                                            <a href="{% url 'product_detail' product.id %}" class="btn btn-sm btn-outline">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center" style="padding: 2rem;">
+                        <i class="fas fa-box-open" style="font-size: 3rem; color: var(--gray); margin-bottom: 1rem;"></i>
+                        <p class="text-gray">No products uploaded yet. Use the form above to add your first product!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
     {% else %}
-        <div class="alert alert-warning">
-            You are not a vendor. You can register as one to access the vendor dashboard.
+        <div class="card">
+            <div class="card-body text-center" style="padding: 4rem 2rem;">
+                <i class="fas fa-store-slash" style="font-size: 5rem; color: var(--gray); margin-bottom: 1rem;"></i>
+                <h2 class="mb-3">You are not registered as a vendor</h2>
+                <p class="text-gray mb-4">{{ message }}</p>
+                <a href="{% url 'register' %}" class="btn btn-primary">
+                    <i class="fas fa-user-plus"></i> Register as Vendor
+                </a>
+            </div>
         </div>
     {% endif %}
 </div>

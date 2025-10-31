@@ -1,44 +1,219 @@
-<!-- marketplace/templates/marketplace/product_detail.html -->
 {% extends 'marketplace/base.html' %}
 
-{% block title %}{{ product.name }}{% endblock %}
+{% block title %}{{ product.name }} - TradeSphere{% endblock %}
 
 {% block content %}
-<h1>{{ product.name }}</h1>
-<p>Price: ${{ product.price }}</p>
-<p>{{ product.description }}</p>
-<img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 200px;">
-
-<h2>Reviews</h2>
-<ul>
-    {% for review in reviews %}
-        <li>
-            <strong>{{ review.user.username }}</strong>: {{ review.rating }} stars
-            <p>{{ review.comment }}</p>
-        </li>
-    {% empty %}
-        <li>No reviews yet.</li>
-    {% endfor %}
-</ul>
-
-<h3>Leave a Review</h3>
-<form method="post">
-    {% csrf_token %}
-    {{ review_form.as_p }}
-    <button type="submit">Submit Review</button>
-</form>
-
-<h3>Order this Product</h3>
-<form method="post">
-    {% csrf_token %}
-    {{ order_form.as_p }}
-    <button type="submit" name="order">Place Order</button>
-</form>
-
-<form method="post" action="{% url 'add_to_wishlist' product.id %}">
-</form>
-    {% csrf_token %}
-    <button type="submit">Add to Wishlist</button>
-</form>
-
+<div class="container">
+    <!-- Breadcrumb -->
+    <div style="margin-bottom: 1.5rem;">
+        <a href="{% url 'homepage' %}" style="color: var(--gray); text-decoration: none;">Home</a>
+        <span style="color: var(--gray); margin: 0 0.5rem;">/</span>
+        <a href="{% url 'products' %}" style="color: var(--gray); text-decoration: none;">Products</a>
+        <span style="color: var(--gray); margin: 0 0.5rem;">/</span>
+        <span style="color: var(--dark); font-weight: 600;">{{ product.name }}</span>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-bottom: 3rem;">
+        <!-- Product Image -->
+        <div class="card">
+            {% if product.has_discount %}
+                <div class="product-badge">-{{ product.discount_percentage }}% OFF</div>
+            {% endif %}
+            
+            {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 100%; height: 500px; object-fit: cover; border-radius: 0.75rem;">
+            {% else %}
+                <div style="width: 100%; height: 500px; background: var(--light-gray); display: flex; align-items: center; justify-content: center; border-radius: 0.75rem;">
+                    <i class="fas fa-image" style="font-size: 5rem; color: var(--gray);"></i>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Product Info -->
+        <div>
+            <h1 style="font-size: 2rem; margin-bottom: 1rem;">{{ product.name }}</h1>
+            
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div style="color: var(--warning);">
+                        {% for i in "12345" %}
+                            <i class="fas fa-star"></i>
+                        {% endfor %}
+                    </div>
+                    <span class="text-gray">({{ reviews|length }} review{{ reviews|length|pluralize }})</span>
+                </div>
+                
+                {% if product.stock > 0 %}
+                    <span style="color: var(--secondary); font-weight: 600;">
+                        <i class="fas fa-check-circle"></i> In Stock ({{ product.stock }})
+                    </span>
+                {% else %}
+                    <span style="color: var(--danger); font-weight: 600;">
+                        <i class="fas fa-times-circle"></i> Out of Stock
+                    </span>
+                {% endif %}
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+                <span style="font-size: 2.5rem; font-weight: 700; color: var(--primary);">₦{{ product.price|floatformat:0 }}</span>
+                {% if product.compare_at_price %}
+                    <span style="text-decoration: line-through; color: var(--gray); font-size: 1.5rem;">₦{{ product.compare_at_price|floatformat:0 }}</span>
+                    <span style="background: var(--danger); color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600;">
+                        Save {{ product.discount_percentage }}%
+                    </span>
+                {% endif %}
+            </div>
+            
+            <div style="padding: 1.5rem; background: var(--light-gray); border-radius: 0.75rem; margin-bottom: 2rem;">
+                <h3 style="font-size: 1.125rem; margin-bottom: 1rem;">Description</h3>
+                <p style="line-height: 1.8; color: var(--gray);">{{ product.description }}</p>
+            </div>
+            
+            <div style="margin-bottom: 2rem;">
+                <p class="text-gray mb-2">
+                    <i class="fas fa-store"></i> Sold by: <strong>{{ product.vendor.name }}</strong>
+                </p>
+                <p class="text-gray">
+                    <i class="fas fa-map-marker-alt"></i> Location: <strong>{{ product.vendor.location }}</strong>
+                </p>
+            </div>
+            
+            {% if user.is_authenticated and product.stock > 0 %}
+                <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                    <form method="post" action="{% url 'add_to_cart' product.id %}" style="flex: 1;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1.125rem; padding: 1rem;">
+                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                        </button>
+                    </form>
+                    
+                    <form method="post" action="{% url 'add_to_wishlist' product.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline" style="padding: 1rem 1.5rem;">
+                            <i class="{% if in_wishlist %}fas{% else %}far{% endif %} fa-heart"></i>
+                        </button>
+                    </form>
+                </div>
+            {% elif not user.is_authenticated %}
+                <div class="alert alert-warning" style="margin-bottom: 1rem;">
+                    <i class="fas fa-info-circle"></i> Please <a href="{% url 'login' %}?next={{ request.path }}">login</a> to purchase this product.
+                </div>
+            {% endif %}
+            
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding: 1.5rem; background: var(--light-gray); border-radius: 0.75rem;">
+                <div class="text-center">
+                    <i class="fas fa-truck" style="font-size: 2rem; color: var(--primary); margin-bottom: 0.5rem;"></i>
+                    <p style="font-size: 0.875rem; font-weight: 600;">Fast Delivery</p>
+                </div>
+                <div class="text-center">
+                    <i class="fas fa-shield-alt" style="font-size: 2rem; color: var(--primary); margin-bottom: 0.5rem;"></i>
+                    <p style="font-size: 0.875rem; font-weight: 600;">Secure Payment</p>
+                </div>
+                <div class="text-center">
+                    <i class="fas fa-undo" style="font-size: 2rem; color: var(--primary); margin-bottom: 0.5rem;"></i>
+                    <p style="font-size: 0.875rem; font-weight: 600;">Easy Returns</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Reviews Section -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="mb-3"><i class="fas fa-star"></i> Customer Reviews</h2>
+            
+            {% if user.is_authenticated %}
+                <form method="post" action="{% url 'submit_review' product.id %}" style="padding: 1.5rem; background: var(--light-gray); border-radius: 0.75rem; margin-bottom: 2rem;">
+                    {% csrf_token %}
+                    <h3 style="font-size: 1.125rem; margin-bottom: 1rem;">Write a Review</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Rating</label>
+                        <select name="rating" class="form-select" required>
+                            <option value="5">5 Stars - Excellent</option>
+                            <option value="4">4 Stars - Good</option>
+                            <option value="3">3 Stars - Average</option>
+                            <option value="2">2 Stars - Poor</option>
+                            <option value="1">1 Star - Terrible</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Your Review</label>
+                        <textarea name="comment" class="form-input" rows="4" placeholder="Share your experience with this product..." required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Submit Review
+                    </button>
+                </form>
+            {% else %}
+                <div class="alert alert-warning" style="margin-bottom: 2rem;">
+                    <i class="fas fa-info-circle"></i> Please <a href="{% url 'login' %}?next={{ request.path }}">login</a> to write a review.
+                </div>
+            {% endif %}
+            
+            <!-- Reviews List -->
+            {% if reviews %}
+                <div style="display: grid; gap: 1.5rem;">
+                    {% for review in reviews %}
+                        <div style="padding: 1.5rem; border: 1px solid var(--border); border-radius: 0.75rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                                <div>
+                                    <strong style="font-size: 1.125rem;">{{ review.user.username }}</strong>
+                                    <div style="color: var(--warning); margin-top: 0.25rem;">
+                                        {% for i in "12345" %}
+                                            {% if i|slice:":1"|add:"0" <= review.rating %}
+                                                <i class="fas fa-star"></i>
+                                            {% else %}
+                                                <i class="far fa-star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <span class="text-gray">{{ review.created_at|date:"F d, Y" }}</span>
+                            </div>
+                            <p style="line-height: 1.6; color: var(--gray);">{{ review.comment }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center" style="padding: 2rem;">
+                    <i class="fas fa-comments" style="font-size: 3rem; color: var(--gray); margin-bottom: 1rem;"></i>
+                    <p class="text-gray">No reviews yet. Be the first to review this product!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Related Products -->
+    {% if related_products %}
+        <div>
+            <h2 class="mb-3"><i class="fas fa-tags"></i> Related Products</h2>
+            <div class="grid grid-4">
+                {% for product in related_products %}
+                    <div class="card product-card">
+                        <a href="{% url 'product_detail' product.id %}">
+                            {% if product.image %}
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="card-img">
+                            {% else %}
+                                <div class="card-img" style="background: var(--light-gray); display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-image" style="font-size: 2rem; color: var(--gray);"></i>
+                                </div>
+                            {% endif %}
+                        </a>
+                        
+                        <div class="card-body">
+                            <h3 class="card-title">{{ product.name|truncatewords:5 }}</h3>
+                            <p class="product-price">₦{{ product.price|floatformat:0 }}</p>
+                            <a href="{% url 'product_detail' product.id %}" class="btn btn-primary" style="width: 100%;">
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</div>
 {% endblock %}

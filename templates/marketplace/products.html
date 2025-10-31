@@ -1,43 +1,152 @@
-<!-- marketplace/templates/marketplace/products.html -->
 {% extends 'marketplace/base.html' %}
 
-{% block title %}
-Products - TradeSphere
-{% endblock %}
+{% block title %}Products - TradeSphere{% endblock %}
 
 {% block content %}
-<h1>Our Products</h1>
-
-<!-- Search Form -->
-<form method="get" action="{% url 'products' %}" class="search-form">
-    <input type="text" name="search" placeholder="Search products" value="{{ search_query }}" class="search-input">
-    <select name="category" class="category-select">
-        <option value="">All Categories</option>
-        {% for category in categories %}
-            <option value="{{ category.id }}" {% if category_id == category.id %}selected{% endif %}>
-                {{ category.name }}
-            </option>
-        {% endfor %}
-    </select>
-    <button type="submit" class="search-button">Search</button>
-</form>
-
-<!-- Product List -->
-<div class="product-list">
-    <ul>
-        {% for product in products %}
-            <li class="product-item">
-                <h3>{{ product.name }}</h3>
-                {% if product.image %}
-                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+<div class="container">
+    <h1 class="mb-4"><i class="fas fa-shopping-bag"></i> Browse Products</h1>
+    
+    <!-- Search and Filter Bar -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" action="{% url 'products' %}">
+                <div style="display: grid; grid-template-columns: 1fr auto auto auto; gap: 1rem; align-items: end;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Search Products</label>
+                        <input type="text" name="search" value="{{ search_query }}" 
+                               class="form-input" placeholder="Search by name or description...">
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Category</label>
+                        <select name="category" class="form-select">
+                            <option value="">All Categories</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}" {% if category_id == category.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ category.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Sort By</label>
+                        <select name="sort" class="form-select">
+                            <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest</option>
+                            <option value="price_low" {% if sort_by == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                            <option value="price_high" {% if sort_by == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                            <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Name (A-Z)</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="height: 48px;">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Results Info -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <p class="text-gray">
+            {% if search_query or category_id %}
+                Showing {{ products|length }} result{{ products|length|pluralize }}
+                {% if search_query %}for "{{ search_query }}"{% endif %}
+            {% else %}
+                Showing all {{ products|length }} product{{ products|length|pluralize }}
+            {% endif %}
+        </p>
+        
+        {% if search_query or category_id %}
+            <a href="{% url 'products' %}" class="btn btn-sm btn-outline">
+                <i class="fas fa-times"></i> Clear Filters
+            </a>
+        {% endif %}
+    </div>
+    
+    <!-- Products Grid -->
+    {% if products %}
+        <div class="grid grid-4">
+            {% for product in products %}
+                <div class="card product-card fade-in">
+                    {% if product.has_discount %}
+                        <div class="product-badge">-{{ product.discount_percentage }}%</div>
+                    {% endif %}
+                    
+                    {% if product.stock == 0 %}
+                        <div class="product-badge" style="background: var(--gray); left: 10px; right: auto;">
+                            Out of Stock
+                        </div>
+                    {% endif %}
+                    
+                    <a href="{% url 'product_detail' product.id %}">
+                        {% if product.image %}
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="card-img">
+                        {% else %}
+                            <div class="card-img" style="background: var(--light-gray); display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-image" style="font-size: 3rem; color: var(--gray);"></i>
+                            </div>
+                        {% endif %}
+                    </a>
+                    
+                    <div class="card-body">
+                        <a href="{% url 'product_detail' product.id %}" style="text-decoration: none; color: inherit;">
+                            <h3 class="card-title">{{ product.name|truncatewords:6 }}</h3>
+                        </a>
+                        
+                        <p class="card-text">{{ product.description|truncatewords:12 }}</p>
+                        
+                        <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                            <span class="product-price">₦{{ product.price|floatformat:0 }}</span>
+                            {% if product.compare_at_price %}
+                                <span class="product-old-price">₦{{ product.compare_at_price|floatformat:0 }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div style="display: flex; gap: 0.5rem;">
+                            <a href="{% url 'product_detail' product.id %}" class="btn btn-primary" style="flex: 1;">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                            
+                            {% if user.is_authenticated and product.stock > 0 %}
+                                <form method="post" action="{% url 'add_to_cart' product.id %}" style="flex: 1;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-secondary" style="width: 100%;">
+                                        <i class="fas fa-cart-plus"></i>
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                        
+                        {% if product.stock > 0 and product.stock <= 5 %}
+                            <p class="text-danger mt-2" style="font-size: 0.875rem; margin-top: 0.5rem;">
+                                <i class="fas fa-exclamation-circle"></i> Only {{ product.stock }} left!
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card">
+            <div class="card-body text-center" style="padding: 4rem 2rem;">
+                <i class="fas fa-search" style="font-size: 5rem; color: var(--gray); margin-bottom: 1rem;"></i>
+                <h2 class="mb-3">No products found</h2>
+                <p class="text-gray mb-4">
+                    {% if search_query %}
+                        Try different keywords or browse all products.
+                    {% else %}
+                        Check back later for new products.
+                    {% endif %}
+                </p>
+                {% if search_query or category_id %}
+                    <a href="{% url 'products' %}" class="btn btn-primary">
+                        <i class="fas fa-shopping-bag"></i> View All Products
+                    </a>
                 {% endif %}
-                <p>Price: ${{ product.price }}</p>
-                <p>Category: <a href="{% url 'category_products' product.category.id %}">{{ product.category.name }}</a></p>
-                <a href="{% url 'product_detail' product.id %}" class="view-details">View Details</a>
-            </li>
-        {% empty %}
-            <li>No products available.</li>
-        {% endfor %}
-    </ul>
+            </div>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}

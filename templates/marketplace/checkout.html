@@ -1,0 +1,134 @@
+{% extends 'marketplace/base.html' %}
+
+{% block title %}Checkout - TradeSphere{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4"><i class="fas fa-credit-card"></i> Checkout</h1>
+    
+    <div style="display: grid; grid-template-columns: 1fr 400px; gap: 2rem;">
+        <!-- Checkout Form -->
+        <div class="card">
+            <div class="card-body">
+                <h2 class="mb-3">Shipping Information</h2>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">{{ form.full_name.label }}</label>
+                            {{ form.full_name }}
+                            {% if form.full_name.errors %}
+                                <span style="color: var(--danger); font-size: 0.875rem;">{{ form.full_name.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">{{ form.phone.label }}</label>
+                            {{ form.phone }}
+                            {% if form.phone.errors %}
+                                <span style="color: var(--danger); font-size: 0.875rem;">{{ form.phone.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">{{ form.email.label }}</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <span style="color: var(--danger); font-size: 0.875rem;">{{ form.email.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">{{ form.shipping_address.label }}</label>
+                        {{ form.shipping_address }}
+                        {% if form.shipping_address.errors %}
+                            <span style="color: var(--danger); font-size: 0.875rem;">{{ form.shipping_address.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">{{ form.shipping_city.label }}</label>
+                            {{ form.shipping_city }}
+                            {% if form.shipping_city.errors %}
+                                <span style="color: var(--danger); font-size: 0.875rem;">{{ form.shipping_city.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">{{ form.shipping_state.label }}</label>
+                            {{ form.shipping_state }}
+                            {% if form.shipping_state.errors %}
+                                <span style="color: var(--danger); font-size: 0.875rem;">{{ form.shipping_state.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">{{ form.shipping_postal_code.label }}</label>
+                            {{ form.shipping_postal_code }}
+                            {% if form.shipping_postal_code.errors %}
+                                <span style="color: var(--danger); font-size: 0.875rem;">{{ form.shipping_postal_code.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">{{ form.shipping_country.label }}</label>
+                            {{ form.shipping_country }}
+                            {% if form.shipping_country.errors %}
+                                <span style="color: var(--danger); font-size: 0.875rem;">{{ form.shipping_country.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">{{ form.notes.label }}</label>
+                        {{ form.notes }}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1.125rem;">
+                        <i class="fas fa-arrow-right"></i> Continue to Payment
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Order Summary -->
+        <div>
+            <div class="checkout-summary">
+                <h2 class="mb-3">Order Summary</h2>
+                
+                {% for item in cart.items.all %}
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);">
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 0.5rem;">
+                        <div style="flex: 1;">
+                            <h4 style="font-size: 0.875rem; margin-bottom: 0.25rem;">{{ item.product.name }}</h4>
+                            <p style="font-size: 0.75rem; color: var(--gray);">Qty: {{ item.quantity }}</p>
+                        </div>
+                        <span class="font-semibold">₦{{ item.total_price }}</span>
+                    </div>
+                {% endfor %}
+                
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span class="font-semibold">₦{{ cart.subtotal }}</span>
+                </div>
+                
+                <div class="summary-row">
+                    <span>Shipping Fee</span>
+                    <span class="font-semibold">₦{{ cart.shipping_fee }}</span>
+                </div>
+                
+                <div class="summary-row" style="border-bottom: none;">
+                    <span class="summary-total">Total</span>
+                    <span class="summary-total">₦{{ cart.total }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
