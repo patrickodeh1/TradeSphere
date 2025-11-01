@@ -27,7 +27,9 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['tradesphere-9uv6.onrender.com']
+
+CRSF_TRUSTED_ORIGINS = ['https://tradesphere-9uv6.onrender.com']
 
 # Application definition
 
