@@ -23,11 +23,11 @@ MEDIA_DIR = os.path.join(BASE_DIR, 'media')
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY')
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG')
+SECRET_KEY = 'django-insecure-tpqjm3ezxel14xzheo1vwv!6@8q8)w&9u9_wd4vnjj86cyk!#q'
 
-ALLOWED_HOSTS = ['tradesphere-9uv6.onrender.com']
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = False
+ALLOWED_HOSTS = ['tradesphere-9uv6.onrender.com', '127.0.0.1']
 
 CRSF_TRUSTED_ORIGINS = ['https://tradesphere-9uv6.onrender.com']
 

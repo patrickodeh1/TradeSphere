@@ -5,7 +5,9 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.utils import timezone
-from django.db.models import Q
+from datetime import timedelta
+from django.db.models.functions import TruncDate
+from django.db.models import Q, Sum, Count, Avg
 from decouple import config
 import requests
 import json
@@ -548,16 +550,21 @@ def vendor_analytics(request):
     start_date = timezone.now() - timedelta(days=days)
     
     # Sales over time
-    daily_sales = OrderItem.objects.filter(
+    daily_sales = (
+    OrderItem.objects
+    .filter(
         product__vendor=vendor,
         order__payment_status='paid',
         order__created_at__gte=start_date
-    ).extra(
-        select={'day': 'date(order__created_at)'}
-    ).values('day').annotate(
+    )
+    .annotate(day=TruncDate('order__created_at'))  # ✅ replaces .extra()
+    .values('day')
+    .annotate(
         revenue=Sum('total_price'),
         orders=Count('order', distinct=True)
-    ).order_by('day')
+    )
+    .order_by('day')
+)
     
     # Product performance
     product_performance = vendor.products.annotate(
