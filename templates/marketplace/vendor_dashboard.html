@@ -5,113 +5,258 @@
 {% block content %}
 <div class="container">
     {% if vendor %}
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-            <div>
-                <h1><i class="fas fa-store"></i> {{ vendor.name }}</h1>
-                <p class="text-gray">
-                    <i class="fas fa-map-marker-alt"></i> {{ vendor.location }}
-                </p>
+        <!-- Vendor Header -->
+        <div style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: 2rem; border-radius: 0.75rem; margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1 style="margin-bottom: 0.5rem; color: white;"><i class="fas fa-store"></i> {{ vendor.name }}</h1>
+                    <p style="opacity: 0.9; margin-bottom: 0;">
+                        <i class="fas fa-map-marker-alt"></i> {{ vendor.location|default:"Location not set" }}
+                        {% if vendor.is_verified %}
+                            <span style="background: var(--secondary); padding: 0.25rem 0.75rem; border-radius: 20px; margin-left: 1rem; font-size: 0.875rem;">
+                                <i class="fas fa-check-circle"></i> Verified
+                            </span>
+                        {% endif %}
+                    </p>
+                </div>
+                <a href="{% url 'edit_profile' %}" class="btn" style="background: white; color: var(--primary);">
+                    <i class="fas fa-edit"></i> Edit Store
+                </a>
             </div>
         </div>
         
-        <!-- Stats Cards -->
+        <!-- Stats Overview -->
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
             <div class="card">
                 <div class="card-body text-center">
-                    <i class="fas fa-boxes" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 0.5rem;"></i>
-                    <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem;">{{ products.count }}</p>
-                    <p class="text-gray">Total Products</p>
+                    <i class="fas fa-naira-sign" style="font-size: 2.5rem; color: var(--secondary); margin-bottom: 0.5rem;"></i>
+                    <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem; color: var(--secondary);">₦{{ total_revenue|floatformat:0 }}</p>
+                    <p class="text-gray">Total Revenue</p>
                 </div>
             </div>
             
             <div class="card">
                 <div class="card-body text-center">
-                    <i class="fas fa-check-circle" style="font-size: 2.5rem; color: var(--secondary); margin-bottom: 0.5rem;"></i>
-                    <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem;">{{ products|length }}</p>
+                    <i class="fas fa-shopping-cart" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 0.5rem;"></i>
+                    <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem;">{{ total_orders }}</p>
+                    <p class="text-gray">Total Orders</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-boxes" style="font-size: 2.5rem; color: var(--warning); margin-bottom: 0.5rem;"></i>
+                    <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem;">{{ active_products }}/{{ total_products }}</p>
                     <p class="text-gray">Active Products</p>
                 </div>
             </div>
             
             <div class="card">
                 <div class="card-body text-center">
-                    <i class="fas fa-eye" style="font-size: 2.5rem; color: var(--warning); margin-bottom: 0.5rem;"></i>
-                    <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem;">0</p>
-                    <p class="text-gray">Total Views</p>
+                    <i class="fas fa-star" style="font-size: 2.5rem; color: var(--warning); margin-bottom: 0.5rem;"></i>
+                    <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem;">{{ average_rating|floatformat:1 }}</p>
+                    <p class="text-gray">Average Rating</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem;">
+            <a href="#upload-product" class="btn btn-primary" style="padding: 1rem; text-align: center;">
+                <i class="fas fa-plus-circle"></i> Add Product
+            </a>
+            <a href="{% url 'vendor_orders' %}" class="btn btn-secondary" style="padding: 1rem; text-align: center;">
+                <i class="fas fa-list"></i> View Orders
+            </a>
+            <a href="{% url 'vendor_analytics' %}" class="btn btn-outline" style="padding: 1rem; text-align: center;">
+                <i class="fas fa-chart-line"></i> Analytics
+            </a>
+            <a href="{% url 'products' %}" class="btn btn-outline" style="padding: 1rem; text-align: center;">
+                <i class="fas fa-eye"></i> View Store
+            </a>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+            <!-- Left Column -->
+            <div>
+                <!-- Pending Orders Alert -->
+                {% if pending_orders %}
+                <div class="alert alert-warning mb-3">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>{{ pending_orders|length }} Pending Order{{ pending_orders|length|pluralize }}</strong> - 
+                    <a href="{% url 'vendor_orders' %}" style="color: inherit; text-decoration: underline;">View and process orders</a>
+                </div>
+                {% endif %}
+                
+                <!-- Low Stock Alert -->
+                {% if low_stock_products %}
+                <div class="alert alert-warning mb-3">
+                    <i class="fas fa-box"></i>
+                    <strong>Low Stock Alert:</strong> {{ low_stock_products|length }} product{{ low_stock_products|length|pluralize }} running low
+                </div>
+                {% endif %}
+                
+                <!-- Recent Orders -->
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h2><i class="fas fa-receipt"></i> Recent Orders</h2>
+                            <a href="{% url 'vendor_orders' %}" class="btn btn-sm btn-outline">View All</a>
+                        </div>
+                        
+                        {% if recent_orders %}
+                            <div style="overflow-x: auto;">
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="border-bottom: 2px solid var(--border);">
+                                            <th style="padding: 0.75rem; text-align: left;">Order</th>
+                                            <th style="padding: 0.75rem; text-align: left;">Product</th>
+                                            <th style="padding: 0.75rem; text-align: center;">Qty</th>
+                                            <th style="padding: 0.75rem; text-align: right;">Amount</th>
+                                            <th style="padding: 0.75rem; text-align: center;">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in recent_orders %}
+                                        <tr style="border-bottom: 1px solid var(--border);">
+                                            <td style="padding: 0.75rem;">
+                                                <strong>#{{ item.order.order_number }}</strong><br>
+                                                <small class="text-gray">{{ item.order.created_at|date:"M d, Y" }}</small>
+                                            </td>
+                                            <td style="padding: 0.75rem;">{{ item.product_name|truncatewords:4 }}</td>
+                                            <td style="padding: 0.75rem; text-align: center;">{{ item.quantity }}</td>
+                                            <td style="padding: 0.75rem; text-align: right; font-weight: 600;">₦{{ item.total_price|floatformat:0 }}</td>
+                                            <td style="padding: 0.75rem; text-align: center;">
+                                                <span style="padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+                                                    {% if item.order.status == 'delivered' %}background: var(--secondary); color: white;
+                                                    {% elif item.order.status == 'cancelled' %}background: var(--danger); color: white;
+                                                    {% else %}background: var(--warning); color: white;{% endif %}">
+                                                    {{ item.order.get_status_display }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-center text-gray" style="padding: 2rem;">No orders yet</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Top Selling Products -->
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="mb-3"><i class="fas fa-trophy"></i> Top Selling Products</h2>
+                        
+                        {% if top_products %}
+                            {% for product in top_products %}
+                            <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; {% if not forloop.last %}border-bottom: 1px solid var(--border);{% endif %}">
+                                {% if product.image %}
+                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" 
+                                         style="width: 60px; height: 60px; object-fit: cover; border-radius: 0.5rem;">
+                                {% else %}
+                                    <div style="width: 60px; height: 60px; background: var(--light-gray); border-radius: 0.5rem; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-image" style="color: var(--gray);"></i>
+                                    </div>
+                                {% endif %}
+                                
+                                <div style="flex: 1;">
+                                    <p style="font-weight: 600; margin-bottom: 0.25rem;">{{ product.name }}</p>
+                                    <p class="text-gray" style="font-size: 0.875rem;">
+                                        {{ product.total_sold }} sold • ₦{{ product.price|floatformat:0 }}
+                                    </p>
+                                </div>
+                                
+                                <a href="{% url 'product_detail' product.id %}" class="btn btn-sm btn-outline">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-center text-gray" style="padding: 2rem;">No sales data yet</p>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
             
-            <div class="card">
-                <div class="card-body text-center">
-                    <i class="fas fa-star" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 0.5rem;"></i>
-                    <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem;">0</p>
-                    <p class="text-gray">Reviews</p>
+            <!-- Right Column -->
+            <div>
+                <!-- Upload Product -->
+                <div class="card mb-3" id="upload-product">
+                    <div class="card-body">
+                        <h2 class="mb-3"><i class="fas fa-plus-circle"></i> Upload Product</h2>
+                        
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            
+                            <div class="form-group">
+                                <label class="form-label">Product Name</label>
+                                {{ form.name }}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Category</label>
+                                {{ form.category }}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Price (₦)</label>
+                                {{ form.price }}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Stock</label>
+                                {{ form.stock }}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Image</label>
+                                {{ form.image }}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Description</label>
+                                {{ form.description }}
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                                <i class="fas fa-upload"></i> Upload Product
+                            </button>
+                        </form>
+                    </div>
                 </div>
-            </div>
-        </div>
-        
-        <!-- Upload Product Form -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <h2 class="mb-3"><i class="fas fa-plus-circle"></i> Upload New Product</h2>
                 
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <div class="form-group">
-                            <label class="form-label">Product Name</label>
-                            {{ form.name }}
-                        </div>
+                <!-- Low Stock Products -->
+                {% if low_stock_products %}
+                <div class="card">
+                    <div class="card-body">
+                        <h3 style="font-size: 1.125rem; margin-bottom: 1rem;">
+                            <i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i> Low Stock
+                        </h3>
                         
-                        <div class="form-group">
-                            <label class="form-label">Category</label>
-                            {{ form.category }}
+                        {% for product in low_stock_products %}
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; {% if not forloop.last %}border-bottom: 1px solid var(--border);{% endif %}">
+                            <div>
+                                <p style="font-weight: 600; margin-bottom: 0.25rem;">{{ product.name|truncatewords:4 }}</p>
+                                <p style="color: var(--danger); font-size: 0.875rem;">
+                                    <i class="fas fa-box"></i> Only {{ product.stock }} left
+                                </p>
+                            </div>
+                            <a href="#" class="btn btn-sm btn-outline">Restock</a>
                         </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">Price (₦)</label>
-                            {{ form.price }}
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">Compare at Price (₦) - Optional</label>
-                            {{ form.compare_at_price }}
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">Stock Quantity</label>
-                            {{ form.stock }}
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">Product Image</label>
-                            {{ form.image }}
-                        </div>
+                        {% endfor %}
                     </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Description</label>
-                        {{ form.description }}
-                    </div>
-                    
-                    <div class="form-group">
-                        <label style="display: flex; align-items: center; cursor: pointer;">
-                            {{ form.is_featured }}
-                            <span style="margin-left: 0.5rem;">Mark as Featured Product</span>
-                        </label>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-upload"></i> Upload Product
-                    </button>
-                </form>
+                </div>
+                {% endif %}
             </div>
         </div>
         
-        <!-- Products List -->
-        <div class="card">
+        <!-- All Products -->
+        <div class="card" style="margin-top: 2rem;">
             <div class="card-body">
-                <h2 class="mb-3"><i class="fas fa-boxes"></i> Your Products</h2>
+                <h2 class="mb-3"><i class="fas fa-boxes"></i> Your Products ({{ total_products }})</h2>
                 
                 {% if products %}
                     <div style="overflow-x: auto;">
@@ -168,9 +313,14 @@
                                             {% endif %}
                                         </td>
                                         <td style="padding: 1rem; text-align: center;">
-                                            <a href="{% url 'product_detail' product.id %}" class="btn btn-sm btn-outline">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
+                                            <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                                                <a href="{% url 'product_detail' product.id %}" class="btn btn-sm btn-outline">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="#" class="btn btn-sm btn-outline">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </div>
                                         </td>
                                     </tr>
                                 {% endfor %}
@@ -178,9 +328,9 @@
                         </table>
                     </div>
                 {% else %}
-                    <div class="text-center" style="padding: 2rem;">
-                        <i class="fas fa-box-open" style="font-size: 3rem; color: var(--gray); margin-bottom: 1rem;"></i>
-                        <p class="text-gray">No products uploaded yet. Use the form above to add your first product!</p>
+                    <div class="text-center" style="padding: 3rem;">
+                        <i class="fas fa-box-open" style="font-size: 4rem; color: var(--gray); margin-bottom: 1rem;"></i>
+                        <p class="text-gray" style="font-size: 1.125rem;">No products uploaded yet. Use the form above to add your first product!</p>
                     </div>
                 {% endif %}
             </div>

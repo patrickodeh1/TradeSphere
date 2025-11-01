@@ -30,28 +30,15 @@ class Command(BaseCommand):
             help='Clear existing data before populating'
         )
 
-    def download_and_process_image(self, category_name, product_id, attempt=0):
+    def download_and_process_image(self, search_term, image_id, width=800, height=600, attempt=0):
         """Download and process image with multiple fallback options"""
         max_attempts = 3
         
-        search_terms = {
-            'Electronics': 'electronics+technology',
-            'Fashion': 'fashion+clothing',
-            'Home & Garden': 'furniture+home',
-            'Sports & Outdoors': 'sports+fitness',
-            'Books & Media': 'books+media',
-            'Toys & Games': 'toys+games',
-            'Beauty & Health': 'beauty+cosmetics',
-            'Automotive': 'car+automotive'
-        }
-        
-        search_term = search_terms.get(category_name, 'product')
-        
         # Try different image sources
         image_urls = [
-            f'https://source.unsplash.com/800x600/?{search_term}&sig={random.randint(1, 10000)}',
-            f'https://picsum.photos/800/600?random={product_id}{attempt}',
-            f'https://loremflickr.com/800/600/{search_term.replace("+", ",")}'
+            f'https://source.unsplash.com/{width}x{height}/?{search_term}&sig={random.randint(1, 10000)}',
+            f'https://picsum.photos/{width}/{height}?random={image_id}{attempt}',
+            f'https://loremflickr.com/{width}/{height}/{search_term.replace("+", ",")}'
         ]
         
         for url in image_urls:
@@ -62,7 +49,7 @@ class Command(BaseCommand):
                     img = Image.open(BytesIO(response.content))
                     
                     # Resize to standard size
-                    img = img.resize((800, 600), Image.Resampling.LANCZOS)
+                    img = img.resize((width, height), Image.Resampling.LANCZOS)
                     
                     # Convert to RGB if necessary
                     if img.mode in ('RGBA', 'LA', 'P'):
@@ -73,8 +60,7 @@ class Command(BaseCommand):
                     img.save(img_io, format='JPEG', quality=85)
                     img_io.seek(0)
                     
-                    filename = f'product_{product_id}_{random.randint(1000, 9999)}.jpg'
-                    return filename, ContentFile(img_io.read())
+                    return ContentFile(img_io.read())
                     
             except Exception as e:
                 continue
@@ -82,9 +68,9 @@ class Command(BaseCommand):
         # If all sources fail and we haven't exceeded max attempts, retry
         if attempt < max_attempts:
             time.sleep(2)  # Wait before retry
-            return self.download_and_process_image(category_name, product_id, attempt + 1)
+            return self.download_and_process_image(search_term, image_id, width, height, attempt + 1)
         
-        return None, None
+        return None
 
     def handle(self, *args, **options):
         fake = Faker()
@@ -97,31 +83,80 @@ class Command(BaseCommand):
             User.objects.filter(is_superuser=False).delete()
             self.stdout.write(self.style.SUCCESS('Data cleared!'))
 
-        # Create categories with icons
+        # Create categories with images
         categories_data = [
-            {'name': 'Electronics', 'description': 'Phones, laptops, and gadgets', 'icon': 'fa-laptop'},
-            {'name': 'Fashion', 'description': 'Clothing, shoes, and accessories', 'icon': 'fa-tshirt'},
-            {'name': 'Home & Garden', 'description': 'Furniture and home decor', 'icon': 'fa-couch'},
-            {'name': 'Sports & Outdoors', 'description': 'Sports equipment and outdoor gear', 'icon': 'fa-football'},
-            {'name': 'Books & Media', 'description': 'Books, movies, and music', 'icon': 'fa-book'},
-            {'name': 'Toys & Games', 'description': 'Toys and gaming products', 'icon': 'fa-gamepad'},
-            {'name': 'Beauty & Health', 'description': 'Beauty and health products', 'icon': 'fa-heart'},
-            {'name': 'Automotive', 'description': 'Car parts and accessories', 'icon': 'fa-car'},
+            {
+                'name': 'Electronics',
+                'description': 'Phones, laptops, and tech gadgets',
+                'search': 'electronics+technology+gadgets'
+            },
+            {
+                'name': 'Fashion',
+                'description': 'Clothing, shoes, and accessories',
+                'search': 'fashion+clothing+style'
+            },
+            {
+                'name': 'Home & Garden',
+                'description': 'Furniture and home decor',
+                'search': 'furniture+home+interior'
+            },
+            {
+                'name': 'Sports & Outdoors',
+                'description': 'Sports equipment and outdoor gear',
+                'search': 'sports+fitness+outdoor'
+            },
+            {
+                'name': 'Books & Media',
+                'description': 'Books, movies, and music',
+                'search': 'books+library+reading'
+            },
+            {
+                'name': 'Toys & Games',
+                'description': 'Toys and gaming products',
+                'search': 'toys+games+play'
+            },
+            {
+                'name': 'Beauty & Health',
+                'description': 'Beauty and health products',
+                'search': 'beauty+cosmetics+skincare'
+            },
+            {
+                'name': 'Automotive',
+                'description': 'Car parts and accessories',
+                'search': 'car+automotive+vehicle'
+            },
         ]
 
-        self.stdout.write('Creating categories...')
+        self.stdout.write('Creating categories with images...')
         categories = []
         for cat_data in categories_data:
             category, created = Category.objects.get_or_create(
                 name=cat_data['name'],
                 defaults={
-                    'description': cat_data['description'],
-                    'icon': cat_data['icon']
+                    'description': cat_data['description']
                 }
             )
+            
+            # Add image to category if it doesn't have one
+            if created or not category.image:
+                self.stdout.write(f'  Downloading image for {category.name}...', ending='')
+                image_content = self.download_and_process_image(
+                    cat_data['search'], 
+                    category.id,
+                    width=1200,
+                    height=800
+                )
+                
+                if image_content:
+                    filename = f'category_{category.id}_{random.randint(1000, 9999)}.jpg'
+                    category.image.save(filename, image_content, save=True)
+                    self.stdout.write(self.style.SUCCESS(f' ✓ Created: {category.name}'))
+                else:
+                    self.stdout.write(self.style.WARNING(f' ⚠ No image: {category.name}'))
+            else:
+                self.stdout.write(f'  ✓ Already exists: {category.name}')
+            
             categories.append(category)
-            if created:
-                self.stdout.write(f'  ✓ Created category: {category.name}')
 
         # Nigerian cities for vendors
         nigerian_cities = [
@@ -142,9 +177,22 @@ class Command(BaseCommand):
                 last_name=fake.last_name()
             )
 
+            # Generate unique vendor name and slug
+            vendor_name = fake.company()
+            from django.utils.text import slugify
+            base_slug = slugify(vendor_name)
+            slug = base_slug
+            counter = 1
+            
+            # Ensure unique slug
+            while Vendor.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+
             vendor = Vendor.objects.create(
                 user=user,
-                name=fake.company(),
+                name=vendor_name,
+                slug=slug,
                 location=random.choice(nigerian_cities),
                 description=fake.text(max_nb_chars=200),
                 contact_email=fake.email(),
@@ -153,40 +201,120 @@ class Command(BaseCommand):
             vendors.append(vendor)
             self.stdout.write(f'  ✓ Created vendor: {vendor.name}')
 
-        # Product templates by category
+        # Product templates by category with specific search terms
         product_templates = {
-            'Electronics': [
-                'Smartphone', 'Laptop', 'Tablet', 'Smartwatch', 'Headphones',
-                'Camera', 'Gaming Console', 'Monitor', 'Keyboard', 'Mouse'
-            ],
-            'Fashion': [
-                'T-Shirt', 'Jeans', 'Sneakers', 'Dress', 'Jacket',
-                'Handbag', 'Sunglasses', 'Watch', 'Belt', 'Hat'
-            ],
-            'Home & Garden': [
-                'Sofa', 'Dining Table', 'Bed Frame', 'Lamp', 'Rug',
-                'Garden Tools', 'Plant Pot', 'Cushions', 'Mirror', 'Curtains'
-            ],
-            'Sports & Outdoors': [
-                'Football', 'Basketball', 'Tennis Racket', 'Bicycle', 'Treadmill',
-                'Yoga Mat', 'Dumbbells', 'Camping Tent', 'Hiking Boots', 'Backpack'
-            ],
-            'Books & Media': [
-                'Novel', 'Cookbook', 'Biography', 'Self-Help Book', 'Comic Book',
-                'DVD Set', 'Vinyl Record', 'Magazine Subscription', 'E-Reader', 'Art Book'
-            ],
-            'Toys & Games': [
-                'Action Figure', 'Board Game', 'Puzzle', 'Doll', 'LEGO Set',
-                'Video Game', 'RC Car', 'Stuffed Animal', 'Building Blocks', 'Card Game'
-            ],
-            'Beauty & Health': [
-                'Skincare Set', 'Perfume', 'Makeup Kit', 'Hair Dryer', 'Face Mask',
-                'Vitamins', 'Fitness Tracker', 'Massage Gun', 'Essential Oils', 'Nail Polish'
-            ],
-            'Automotive': [
-                'Car Battery', 'Tire Set', 'Car Cover', 'GPS Navigator', 'Dash Cam',
-                'Car Vacuum', 'Jump Starter', 'Floor Mats', 'Air Freshener', 'Tool Kit'
-            ]
+            'Electronics': {
+                'products': [
+                    ('Smartphone', 'smartphone+mobile'),
+                    ('Laptop', 'laptop+computer'),
+                    ('Tablet', 'tablet+ipad'),
+                    ('Smartwatch', 'smartwatch+wearable'),
+                    ('Headphones', 'headphones+audio'),
+                    ('Camera', 'camera+photography'),
+                    ('Gaming Console', 'gaming+console'),
+                    ('Monitor', 'monitor+display'),
+                    ('Keyboard', 'keyboard+mechanical'),
+                    ('Mouse', 'mouse+gaming')
+                ]
+            },
+            'Fashion': {
+                'products': [
+                    ('T-Shirt', 'tshirt+fashion'),
+                    ('Jeans', 'jeans+denim'),
+                    ('Sneakers', 'sneakers+shoes'),
+                    ('Dress', 'dress+fashion'),
+                    ('Jacket', 'jacket+coat'),
+                    ('Handbag', 'handbag+purse'),
+                    ('Sunglasses', 'sunglasses+eyewear'),
+                    ('Watch', 'watch+timepiece'),
+                    ('Belt', 'belt+leather'),
+                    ('Hat', 'hat+cap')
+                ]
+            },
+            'Home & Garden': {
+                'products': [
+                    ('Sofa', 'sofa+couch'),
+                    ('Dining Table', 'dining+table'),
+                    ('Bed Frame', 'bed+frame'),
+                    ('Lamp', 'lamp+lighting'),
+                    ('Rug', 'rug+carpet'),
+                    ('Garden Tools', 'garden+tools'),
+                    ('Plant Pot', 'plant+pot'),
+                    ('Cushions', 'cushion+pillow'),
+                    ('Mirror', 'mirror+decor'),
+                    ('Curtains', 'curtains+drapes')
+                ]
+            },
+            'Sports & Outdoors': {
+                'products': [
+                    ('Football', 'football+soccer'),
+                    ('Basketball', 'basketball+ball'),
+                    ('Tennis Racket', 'tennis+racket'),
+                    ('Bicycle', 'bicycle+bike'),
+                    ('Treadmill', 'treadmill+fitness'),
+                    ('Yoga Mat', 'yoga+mat'),
+                    ('Dumbbells', 'dumbbells+weights'),
+                    ('Camping Tent', 'camping+tent'),
+                    ('Hiking Boots', 'hiking+boots'),
+                    ('Backpack', 'backpack+outdoor')
+                ]
+            },
+            'Books & Media': {
+                'products': [
+                    ('Novel', 'novel+book'),
+                    ('Cookbook', 'cookbook+recipe'),
+                    ('Biography', 'biography+book'),
+                    ('Self-Help Book', 'selfhelp+book'),
+                    ('Comic Book', 'comic+book'),
+                    ('DVD Set', 'dvd+movie'),
+                    ('Vinyl Record', 'vinyl+record'),
+                    ('Magazine Subscription', 'magazine+reading'),
+                    ('E-Reader', 'ereader+kindle'),
+                    ('Art Book', 'artbook+illustration')
+                ]
+            },
+            'Toys & Games': {
+                'products': [
+                    ('Action Figure', 'action+figure'),
+                    ('Board Game', 'boardgame+game'),
+                    ('Puzzle', 'puzzle+jigsaw'),
+                    ('Doll', 'doll+toy'),
+                    ('LEGO Set', 'lego+blocks'),
+                    ('Video Game', 'videogame+gaming'),
+                    ('RC Car', 'rc+car'),
+                    ('Stuffed Animal', 'stuffed+animal'),
+                    ('Building Blocks', 'building+blocks'),
+                    ('Card Game', 'card+game')
+                ]
+            },
+            'Beauty & Health': {
+                'products': [
+                    ('Skincare Set', 'skincare+cosmetics'),
+                    ('Perfume', 'perfume+fragrance'),
+                    ('Makeup Kit', 'makeup+cosmetics'),
+                    ('Hair Dryer', 'hairdryer+beauty'),
+                    ('Face Mask', 'facemask+skincare'),
+                    ('Vitamins', 'vitamins+supplements'),
+                    ('Fitness Tracker', 'fitness+tracker'),
+                    ('Massage Gun', 'massage+gun'),
+                    ('Essential Oils', 'essential+oils'),
+                    ('Nail Polish', 'nailpolish+beauty')
+                ]
+            },
+            'Automotive': {
+                'products': [
+                    ('Car Battery', 'car+battery'),
+                    ('Tire Set', 'tire+wheel'),
+                    ('Car Cover', 'car+cover'),
+                    ('GPS Navigator', 'gps+navigation'),
+                    ('Dash Cam', 'dashcam+camera'),
+                    ('Car Vacuum', 'car+vacuum'),
+                    ('Jump Starter', 'jump+starter'),
+                    ('Floor Mats', 'car+mats'),
+                    ('Air Freshener', 'car+freshener'),
+                    ('Tool Kit', 'tool+kit')
+                ]
+            }
         }
 
         # Create products with images
@@ -200,9 +328,9 @@ class Command(BaseCommand):
             category = random.choice(categories)
             vendor = random.choice(vendors)
             
-            # Get product template
-            templates = product_templates.get(category.name, ['Product'])
-            product_type = random.choice(templates)
+            # Get product template with search term
+            templates = product_templates.get(category.name, {}).get('products', [('Product', 'product')])
+            product_type, search_term = random.choice(templates)
             brand = fake.company().split()[0]
             
             # Generate realistic product name
@@ -217,12 +345,12 @@ class Command(BaseCommand):
             if random.random() > 0.6:  # 40% chance of discount
                 compare_at_price = price + random.randint(5000, 50000)
             
-            # Download image BEFORE creating product
-            self.stdout.write(f'  Downloading image for product {i+1}/{options["products"]}...', ending='')
-            filename, image_content = self.download_and_process_image(category.name, i)
+            # Download image BEFORE creating product using specific search term
+            self.stdout.write(f'  [{i+1}/{options["products"]}] Downloading image for {product_name}...', ending='')
+            image_content = self.download_and_process_image(search_term, i)
             
             if image_content is None:
-                self.stdout.write(self.style.WARNING(f' ✗ SKIPPED (no image): {product_name}'))
+                self.stdout.write(self.style.WARNING(f' ✗ SKIPPED'))
                 products_skipped += 1
                 continue  # Skip this product if no image available
             
@@ -240,10 +368,11 @@ class Command(BaseCommand):
             )
             
             # Save the image
+            filename = f'product_{product.id}_{random.randint(1000, 9999)}.jpg'
             product.image.save(filename, image_content, save=True)
             
             products_created += 1
-            self.stdout.write(self.style.SUCCESS(f' ✓ {product.name}'))
+            self.stdout.write(self.style.SUCCESS(f' ✓'))
             
             # Small delay to avoid rate limiting
             if i % 5 == 0 and i > 0:
@@ -279,6 +408,7 @@ class Command(BaseCommand):
         self.stdout.write('\n' + '='*50)
         self.stdout.write(self.style.SUCCESS('\n✓ Database population complete!\n'))
         self.stdout.write(f'  Categories: {Category.objects.count()}')
+        self.stdout.write(f'  Categories with images: {Category.objects.exclude(image="").count()}')
         self.stdout.write(f'  Vendors: {Vendor.objects.count()}')
         self.stdout.write(f'  Products: {Product.objects.count()}')
         self.stdout.write(f'  Products with images: {Product.objects.exclude(image="").count()}')

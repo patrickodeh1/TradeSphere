@@ -9,6 +9,7 @@ from django.db.models import Q
 from decouple import config
 import requests
 import json
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from .models import (Product, Category, Wishlist, Vendor, UserProfile, 
                      Order, OrderItem, ProductReview, Cart, CartItem)
@@ -55,7 +56,7 @@ def product_detail(request, product_id):
 
 
 def products(request):
-    """Display products with search and filter functionality"""
+    """Display products with search, filter, and pagination functionality"""
     query = request.GET.get('search', '')
     category_id = request.GET.get('category', '')
     sort_by = request.GET.get('sort', 'newest')
@@ -82,14 +83,26 @@ def products(request):
     else:  # newest
         products_list = products_list.order_by('-created_at')
     
+    # Pagination - 16 products per page (4x4 grid)
+    paginator = Paginator(products_list, 16)
+    page = request.GET.get('page', 1)
+    
+    try:
+        products_page = paginator.page(page)
+    except PageNotAnInteger:
+        products_page = paginator.page(1)
+    except EmptyPage:
+        products_page = paginator.page(paginator.num_pages)
+    
     categories = Category.objects.all()
     
     context = {
-        'products': products_list,
+        'products': products_page,
         'categories': categories,
         'search_query': query,
         'category_id': category_id,
         'sort_by': sort_by,
+        'paginator': paginator,
     }
     return render(request, 'marketplace/products.html', context)
 
@@ -392,22 +405,77 @@ def submit_review(request, product_id):
 # Vendor views
 @login_required
 def vendor_dashboard(request):
-    """Vendor dashboard"""
+    """Enhanced vendor dashboard with sales analytics"""
     try:
         vendor = request.user.vendor
     except Vendor.DoesNotExist:
         messages.warning(request, 'You need to register as a vendor first.')
         return redirect('homepage')
     
-    products = vendor.products.all()
+    # Get all vendor products
+    products = vendor.products.all().order_by('-created_at')
     
+    # Get vendor orders (orders containing vendor's products)
+    vendor_order_items = OrderItem.objects.filter(
+        product__vendor=vendor
+    ).select_related('order', 'product')
+    
+    # Calculate statistics
+    total_products = products.count()
+    active_products = products.filter(is_active=True).count()
+    out_of_stock = products.filter(stock=0).count()
+    
+    # Sales statistics
+    paid_orders = vendor_order_items.filter(order__payment_status='paid')
+    total_revenue = paid_orders.aggregate(total=Sum('total_price'))['total'] or 0
+    total_orders = paid_orders.values('order').distinct().count()
+    
+    # Recent orders
+    recent_orders = vendor_order_items.filter(
+        order__payment_status='paid'
+    ).order_by('-order__created_at')[:10]
+    
+    # Pending orders
+    pending_orders = vendor_order_items.filter(
+        order__status__in=['pending', 'processing']
+    ).order_by('-order__created_at')[:5]
+    
+    # Monthly sales (last 6 months)
+    six_months_ago = timezone.now() - timedelta(days=180)
+    monthly_sales = []
+    for i in range(6):
+        month_start = timezone.now() - timedelta(days=30 * (5 - i))
+        month_end = timezone.now() - timedelta(days=30 * (4 - i))
+        month_revenue = paid_orders.filter(
+            order__created_at__gte=month_start,
+            order__created_at__lt=month_end
+        ).aggregate(total=Sum('total_price'))['total'] or 0
+        monthly_sales.append({
+            'month': month_start.strftime('%b'),
+            'revenue': float(month_revenue)
+        })
+    
+    # Top selling products
+    top_products = products.annotate(
+        total_sold=Count('orderitem', filter=Q(orderitem__order__payment_status='paid'))
+    ).order_by('-total_sold')[:5]
+    
+    # Low stock products
+    low_stock_products = products.filter(stock__lte=5, stock__gt=0).order_by('stock')[:5]
+    
+    # Average rating
+    average_rating = ProductReview.objects.filter(
+        product__vendor=vendor
+    ).aggregate(avg=Avg('rating'))['avg'] or 0
+    
+    # Handle product upload
     if request.method == 'POST':
         form = ProductUploadForm(request.POST, request.FILES)
         if form.is_valid():
             product = form.save(commit=False)
             product.vendor = vendor
             product.save()
-            messages.success(request, 'Product uploaded successfully!')
+            messages.success(request, f'Product "{product.name}" uploaded successfully!')
             return redirect('vendor_dashboard')
     else:
         form = ProductUploadForm()
@@ -415,36 +483,144 @@ def vendor_dashboard(request):
     context = {
         'vendor': vendor,
         'products': products,
+        'total_products': total_products,
+        'active_products': active_products,
+        'out_of_stock': out_of_stock,
+        'total_revenue': total_revenue,
+        'total_orders': total_orders,
+        'recent_orders': recent_orders,
+        'pending_orders': pending_orders,
+        'monthly_sales': monthly_sales,
+        'top_products': top_products,
+        'low_stock_products': low_stock_products,
+        'average_rating': average_rating,
         'form': form,
+        'categories': Category.objects.all(),
     }
     return render(request, 'marketplace/vendor_dashboard.html', context)
 
 
+@login_required
+def vendor_orders(request):
+    """View all vendor orders"""
+    try:
+        vendor = request.user.vendor
+    except Vendor.DoesNotExist:
+        messages.warning(request, 'You need to be a vendor to access this page.')
+        return redirect('homepage')
+    
+    # Get all orders containing vendor's products
+    order_items = OrderItem.objects.filter(
+        product__vendor=vendor
+    ).select_related('order', 'product').order_by('-order__created_at')
+    
+    # Group by order
+    orders_dict = {}
+    for item in order_items:
+        order_id = item.order.id
+        if order_id not in orders_dict:
+            orders_dict[order_id] = {
+                'order': item.order,
+                'items': [],
+                'vendor_total': 0
+            }
+        orders_dict[order_id]['items'].append(item)
+        orders_dict[order_id]['vendor_total'] += item.total_price
+    
+    context = {
+        'orders': orders_dict.values(),
+        'vendor': vendor,
+    }
+    return render(request, 'marketplace/vendor_orders.html', context)
+
+
+@login_required
+def vendor_analytics(request):
+    """Vendor analytics page"""
+    try:
+        vendor = request.user.vendor
+    except Vendor.DoesNotExist:
+        messages.warning(request, 'You need to be a vendor to access this page.')
+        return redirect('homepage')
+    
+    # Date range filter
+    days = int(request.GET.get('days', 30))
+    start_date = timezone.now() - timedelta(days=days)
+    
+    # Sales over time
+    daily_sales = OrderItem.objects.filter(
+        product__vendor=vendor,
+        order__payment_status='paid',
+        order__created_at__gte=start_date
+    ).extra(
+        select={'day': 'date(order__created_at)'}
+    ).values('day').annotate(
+        revenue=Sum('total_price'),
+        orders=Count('order', distinct=True)
+    ).order_by('day')
+    
+    # Product performance
+    product_performance = vendor.products.annotate(
+        views=Count('id'),  # You can add view tracking later
+        sales=Count('orderitem', filter=Q(orderitem__order__payment_status='paid')),
+        revenue=Sum('orderitem__total_price', filter=Q(orderitem__order__payment_status='paid'))
+    ).order_by('-revenue')
+    
+    context = {
+        'vendor': vendor,
+        'daily_sales': daily_sales,
+        'product_performance': product_performance,
+        'days': days,
+    }
+    return render(request, 'marketplace/vendor_analytics.html', context)
+
+
 # Authentication views
 def register(request):
-    """User registration"""
+    """User registration with proper vendor creation"""
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
-            user = form.save()
-            
-            # Update profile
-            profile = user.profile
-            profile.profile_picture = form.cleaned_data.get('profile_picture')
-            profile.bio = form.cleaned_data.get('bio')
-            profile.save()
-            
-            # Create vendor if user type is vendor
-            if form.cleaned_data['user_type'] == 'vendor':
-                Vendor.objects.create(
-                    user=user,
-                    name=user.username,
-                    contact_email=user.email,
-                    location='',
-                )
-            
-            messages.success(request, 'Registration successful! You can now log in.')
-            return redirect('login')
+            try:
+                with transaction.atomic():
+                    # Save the user
+                    user = form.save()
+                    
+                    # Update profile with additional info
+                    profile = user.profile
+                    if form.cleaned_data.get('profile_picture'):
+                        profile.profile_picture = form.cleaned_data['profile_picture']
+                    if form.cleaned_data.get('bio'):
+                        profile.bio = form.cleaned_data['bio']
+                    profile.save()
+                    
+                    # Create vendor if user type is vendor
+                    user_type = form.cleaned_data.get('user_type')
+                    if user_type == 'vendor':
+                        vendor = Vendor.objects.create(
+                            user=user,
+                            name=user.get_full_name() or user.username,
+                            contact_email=user.email,
+                            location='',  # Will be set later in profile
+                            description=form.cleaned_data.get('bio', '')
+                        )
+                        messages.success(
+                            request, 
+                            f'Vendor account created successfully! Welcome {user.username}. '
+                            'Please complete your vendor profile to start selling.'
+                        )
+                    else:
+                        messages.success(
+                            request, 
+                            f'Account created successfully! Welcome {user.username}. '
+                            'You can now start shopping.'
+                        )
+                    
+                    return redirect('login')
+                    
+            except IntegrityError as e:
+                messages.error(request, 'An error occurred during registration. Please try again.')
+                print(f"Registration error: {e}")
     else:
         form = UserRegistrationForm()
     

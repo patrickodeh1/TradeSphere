@@ -14,7 +14,7 @@
     <nav>
         <div class="nav-container">
             <a href="{% url 'homepage' %}" class="nav-logo">
-                <i class="fas fa-store"></i> TradeSphere
+                <img src="{% static 'images/logo.svg' %}" alt="TradeSphere Logo" class="logo-img">
             </a>
             
             <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
@@ -74,7 +74,9 @@
     <footer>
         <div class="footer-content">
             <div class="footer-section">
-                <h3><i class="fas fa-store"></i> TradeSphere</h3>
+                <h3>
+                    <img src="{% static 'images/logo.svg' %}" alt="TradeSphere Logo" class="footer-logo-img">
+                </h3>
                 <p>Your trusted marketplace for local trading. Connect with buyers and sellers in your community.</p>
             </div>
             

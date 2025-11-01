@@ -8,14 +8,23 @@ class Category(models.Model):
     """Model to represent a product category"""
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(blank=True)
-    icon = models.CharField(max_length=50, blank=True)  # For icon class names
+    image = models.ImageField(upload_to='categories/', blank=True, null=True)
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
         return self.name
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            from django.utils.text import slugify
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name_plural = "Categories"
-
+        ordering = ['name']
 
 class UserProfile(models.Model):
     """Model to store additional user information"""
@@ -47,9 +56,48 @@ class Vendor(models.Model):
     logo = models.ImageField(upload_to='vendor_logos/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
+    banner = models.ImageField(upload_to='vendor_banners/', blank=True, null=True)
+    business_name = models.CharField(max_length=255, blank=True)
+    business_registration = models.CharField(max_length=100, blank=True)
+    tax_id = models.CharField(max_length=100, blank=True)
+    is_verified = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     def __str__(self):
         return self.name
+    @property
+    def total_products(self):
+        return self.products.filter(is_active=True).count()
+
+    @property
+    def total_sales(self):
+        from django.db.models import Sum
+        return OrderItem.objects.filter(
+            product__vendor=self,
+            order__payment_status='paid'
+        ).aggregate(total=Sum('total_price'))['total'] or 0
+
+    @property
+    def total_orders(self):
+        return OrderItem.objects.filter(
+            product__vendor=self,
+            order__payment_status='paid'
+        ).values('order').distinct().count()
+
+    @property
+    def pending_orders(self):
+        return OrderItem.objects.filter(
+            product__vendor=self,
+            order__status__in=['pending', 'processing']
+        ).values('order').distinct().count()
+
+    @property
+    def average_rating(self):
+        from django.db.models import Avg
+        avg = ProductReview.objects.filter(
+            product__vendor=self
+        ).aggregate(avg_rating=Avg('rating'))['avg_rating']
+        return round(avg, 1) if avg else 0
 
 
 class Product(models.Model):

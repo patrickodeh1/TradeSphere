@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="container">
-    <div style="max-width: 600px; margin: 0 auto;">
+    <div style="max-width: 700px; margin: 0 auto;">
         <div class="card">
             <div class="card-body" style="padding: 2.5rem;">
                 <div class="text-center mb-4">
@@ -24,35 +24,61 @@
                         </div>
                     {% endif %}
                     
+                    <!-- Name Fields -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-user"></i> First Name
+                            </label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                                <span style="color: var(--danger); font-size: 0.875rem;">{{ form.first_name.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-user"></i> Last Name
+                            </label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                                <span style="color: var(--danger); font-size: 0.875rem;">{{ form.last_name.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Username -->
                     <div class="form-group">
                         <label class="form-label">
-                            <i class="fas fa-user"></i> Username
+                            <i class="fas fa-at"></i> Username
                         </label>
-                        <input type="text" name="username" value="{{ form.username.value|default:'' }}" 
-                               class="form-input" placeholder="Choose a username" required>
+                        {{ form.username }}
                         {% if form.username.errors %}
                             <span style="color: var(--danger); font-size: 0.875rem;">{{ form.username.errors.0 }}</span>
                         {% endif %}
+                        <small class="text-gray" style="display: block; margin-top: 0.25rem;">
+                            Choose a unique username for your account
+                        </small>
                     </div>
                     
+                    <!-- Email -->
                     <div class="form-group">
                         <label class="form-label">
                             <i class="fas fa-envelope"></i> Email Address
                         </label>
-                        <input type="email" name="email" value="{{ form.email.value|default:'' }}" 
-                               class="form-input" placeholder="your@email.com" required>
+                        {{ form.email }}
                         {% if form.email.errors %}
                             <span style="color: var(--danger); font-size: 0.875rem;">{{ form.email.errors.0 }}</span>
                         {% endif %}
                     </div>
                     
+                    <!-- Password Fields -->
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                         <div class="form-group">
                             <label class="form-label">
                                 <i class="fas fa-lock"></i> Password
                             </label>
-                            <input type="password" name="password1" class="form-input" 
-                                   placeholder="Create password" required>
+                            {{ form.password1 }}
                             {% if form.password1.errors %}
                                 <span style="color: var(--danger); font-size: 0.875rem;">{{ form.password1.errors.0 }}</span>
                             {% endif %}
@@ -62,24 +88,41 @@
                             <label class="form-label">
                                 <i class="fas fa-lock"></i> Confirm Password
                             </label>
-                            <input type="password" name="password2" class="form-input" 
-                                   placeholder="Confirm password" required>
+                            {{ form.password2 }}
                             {% if form.password2.errors %}
                                 <span style="color: var(--danger); font-size: 0.875rem;">{{ form.password2.errors.0 }}</span>
                             {% endif %}
                         </div>
                     </div>
                     
+                    <!-- Password Requirements -->
+                    <div style="background: var(--light-gray); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+                        <p style="font-weight: 600; margin-bottom: 0.5rem; font-size: 0.875rem;">
+                            <i class="fas fa-info-circle"></i> Password Requirements:
+                        </p>
+                        <ul style="font-size: 0.875rem; color: var(--gray); margin-left: 1.5rem;">
+                            <li>At least 8 characters long</li>
+                            <li>Can't be too similar to your other personal information</li>
+                            <li>Can't be a commonly used password</li>
+                            <li>Can't be entirely numeric</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Account Type -->
                     <div class="form-group">
                         <label class="form-label">
                             <i class="fas fa-user-tag"></i> Account Type
                         </label>
-                        <select name="user_type" class="form-select" required>
-                            <option value="customer">Customer - I want to buy products</option>
-                            <option value="vendor">Vendor - I want to sell products</option>
-                        </select>
+                        {{ form.user_type }}
+                        {% if form.user_type.errors %}
+                            <span style="color: var(--danger); font-size: 0.875rem;">{{ form.user_type.errors.0 }}</span>
+                        {% endif %}
+                        <small class="text-gray" style="display: block; margin-top: 0.25rem;">
+                            Choose Customer to buy products or Vendor to sell products
+                        </small>
                     </div>
                     
+                    <!-- Optional Information -->
                     <div style="padding: 1.5rem; background: var(--light-gray); border-radius: 0.75rem; margin-bottom: 1.5rem;">
                         <h3 style="font-size: 1rem; margin-bottom: 1rem;">
                             <i class="fas fa-info-circle"></i> Optional Information
@@ -87,20 +130,27 @@
                         
                         <div class="form-group">
                             <label class="form-label">Profile Picture</label>
-                            <input type="file" name="profile_picture" class="form-input" accept="image/*">
+                            {{ form.profile_picture }}
+                            <small class="text-gray" style="display: block; margin-top: 0.25rem;">
+                                Add a profile picture to personalize your account
+                            </small>
                         </div>
                         
                         <div class="form-group" style="margin-bottom: 0;">
                             <label class="form-label">Bio</label>
-                            <textarea name="bio" class="form-input" rows="3" 
-                                      placeholder="Tell us about yourself...">{{ form.bio.value|default:'' }}</textarea>
+                            {{ form.bio }}
+                            <small class="text-gray" style="display: block; margin-top: 0.25rem;">
+                                Tell us a little about yourself
+                            </small>
                         </div>
                     </div>
                     
+                    <!-- Submit Button -->
                     <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1.125rem; padding: 1rem;">
                         <i class="fas fa-user-plus"></i> Create Account
                     </button>
                     
+                    <!-- Login Link -->
                     <p class="text-center mt-3">
                         Already have an account? 
                         <a href="{% url 'login' %}" style="color: var(--primary); font-weight: 600;">

@@ -1,14 +1,154 @@
 {% extends 'marketplace/base.html' %}
 
-{% block title %}
-Edit Profile
-{% endblock %}
+{% block title %}Edit Profile - TradeSphere{% endblock %}
 
 {% block content %}
-<h1>Edit Profile</h1>
-<form method="post" enctype="multipart/form-data" class="edit-profile-form">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save changes</button>
-</form>
+<div class="container">
+    <div style="max-width: 800px; margin: 0 auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h1><i class="fas fa-user-edit"></i> Edit Profile</h1>
+            <a href="{% url 'profile' %}" class="btn btn-outline">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+        
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Personal Information -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h2 class="mb-3"><i class="fas fa-user"></i> Personal Information</h2>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">First Name</label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                                <span style="color: var(--danger); font-size: 0.875rem;">{{ form.first_name.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Last Name</label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                                <span style="color: var(--danger); font-size: 0.875rem;">{{ form.last_name.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <span style="color: var(--danger); font-size: 0.875rem;">{{ form.email.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Phone Number</label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}
+                            <span style="color: var(--danger); font-size: 0.875rem;">{{ form.phone.errors.0 }}</span>
+                        {% endif %}
+                        <small class="text-gray" style="display: block; margin-top: 0.25rem;">
+                            Format: +234XXXXXXXXXX or 08XXXXXXXXX
+                        </small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Profile Picture</label>
+                        {% if user.profile.profile_picture %}
+                            <div style="margin-bottom: 1rem;">
+                                <img src="{{ user.profile.profile_picture.url }}" alt="Current profile picture" 
+                                     style="width: 120px; height: 120px; object-fit: cover; border-radius: 50%; border: 3px solid var(--border);">
+                            </div>
+                        {% endif %}
+                        {{ form.profile_picture }}
+                        <small class="text-gray" style="display: block; margin-top: 0.25rem;">
+                            Upload a new image to change your profile picture
+                        </small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Bio</label>
+                        {{ form.bio }}
+                        {% if form.bio.errors %}
+                            <span style="color: var(--danger); font-size: 0.875rem;">{{ form.bio.errors.0 }}</span>
+                        {% endif %}
+                        <small class="text-gray" style="display: block; margin-top: 0.25rem;">
+                            Tell us a bit about yourself
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Shipping Address -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h2 class="mb-3"><i class="fas fa-map-marker-alt"></i> Shipping Address</h2>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Street Address</label>
+                        {{ form.shipping_address }}
+                        {% if form.shipping_address.errors %}
+                            <span style="color: var(--danger); font-size: 0.875rem;">{{ form.shipping_address.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">City</label>
+                            {{ form.shipping_city }}
+                            {% if form.shipping_city.errors %}
+                                <span style="color: var(--danger); font-size: 0.875rem;">{{ form.shipping_city.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">State</label>
+                            {{ form.shipping_state }}
+                            {% if form.shipping_state.errors %}
+                                <span style="color: var(--danger); font-size: 0.875rem;">{{ form.shipping_state.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Postal Code</label>
+                            {{ form.shipping_postal_code }}
+                            {% if form.shipping_postal_code.errors %}
+                                <span style="color: var(--danger); font-size: 0.875rem;">{{ form.shipping_postal_code.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Country</label>
+                            {{ form.shipping_country }}
+                            {% if form.shipping_country.errors %}
+                                <span style="color: var(--danger); font-size: 0.875rem;">{{ form.shipping_country.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning" style="margin-top: 1rem;">
+                        <i class="fas fa-info-circle"></i> This address will be used as your default shipping address for orders.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <a href="{% url 'profile' %}" class="btn btn-outline">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+                <button type="submit" class="btn btn-primary" style="padding: 0.75rem 2rem;">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}

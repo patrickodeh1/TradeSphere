@@ -51,10 +51,10 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
         <p class="text-gray">
             {% if search_query or category_id %}
-                Showing {{ products|length }} result{{ products|length|pluralize }}
+                Showing {{ products.start_index }}-{{ products.end_index }} of {{ paginator.count }} result{{ paginator.count|pluralize }}
                 {% if search_query %}for "{{ search_query }}"{% endif %}
             {% else %}
-                Showing all {{ products|length }} product{{ products|length|pluralize }}
+                Showing {{ products.start_index }}-{{ products.end_index }} of {{ paginator.count }} product{{ paginator.count|pluralize }}
             {% endif %}
         </p>
         
@@ -65,7 +65,7 @@
         {% endif %}
     </div>
     
-    <!-- Products Grid -->
+    <!-- Products Grid - 4 per row -->
     {% if products %}
         <div class="grid grid-4">
             {% for product in products %}
@@ -128,6 +128,64 @@
                 </div>
             {% endfor %}
         </div>
+        
+        <!-- Pagination -->
+        {% if paginator.num_pages > 1 %}
+            <div style="display: flex; justify-content: center; align-items: center; margin-top: 3rem; gap: 0.5rem;">
+                {% if products.has_previous %}
+                    <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" 
+                       class="btn btn-outline btn-sm">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                    <a href="?page={{ products.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" 
+                       class="btn btn-outline btn-sm">
+                        <i class="fas fa-angle-left"></i> Previous
+                    </a>
+                {% else %}
+                    <button class="btn btn-outline btn-sm" disabled style="opacity: 0.5;">
+                        <i class="fas fa-angle-double-left"></i>
+                    </button>
+                    <button class="btn btn-outline btn-sm" disabled style="opacity: 0.5;">
+                        <i class="fas fa-angle-left"></i> Previous
+                    </button>
+                {% endif %}
+                
+                <!-- Page Numbers -->
+                <div style="display: flex; gap: 0.25rem;">
+                    {% for num in paginator.page_range %}
+                        {% if num == products.number %}
+                            <span class="btn btn-primary btn-sm" style="min-width: 40px;">{{ num }}</span>
+                        {% elif num > products.number|add:'-3' and num < products.number|add:'3' %}
+                            <a href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" 
+                               class="btn btn-outline btn-sm" style="min-width: 40px;">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                
+                {% if products.has_next %}
+                    <a href="?page={{ products.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" 
+                       class="btn btn-outline btn-sm">
+                        Next <i class="fas fa-angle-right"></i>
+                    </a>
+                    <a href="?page={{ paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" 
+                       class="btn btn-outline btn-sm">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                {% else %}
+                    <button class="btn btn-outline btn-sm" disabled style="opacity: 0.5;">
+                        Next <i class="fas fa-angle-right"></i>
+                    </button>
+                    <button class="btn btn-outline btn-sm" disabled style="opacity: 0.5;">
+                        <i class="fas fa-angle-double-right"></i>
+                    </button>
+                {% endif %}
+                
+                <span class="text-gray" style="margin-left: 1rem;">
+                    Page {{ products.number }} of {{ paginator.num_pages }}
+                </span>
+            </div>
+        {% endif %}
+        
     {% else %}
         <div class="card">
             <div class="card-body text-center" style="padding: 4rem 2rem;">
@@ -149,4 +207,12 @@
         </div>
     {% endif %}
 </div>
+
+<style>
+/* Pagination Button Styles */
+.btn-sm {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+}
+</style>
 {% endblock %}

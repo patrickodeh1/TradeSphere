@@ -1,0 +1,144 @@
+{% extends 'marketplace/base.html' %}
+
+{% block title %}My Orders - Vendor Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h1><i class="fas fa-shopping-cart"></i> My Orders</h1>
+        <a href="{% url 'vendor_dashboard' %}" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+    
+    {% if orders %}
+        <div style="display: grid; gap: 1.5rem;">
+            {% for order_data in orders %}
+                <div class="card">
+                    <div class="card-body">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid var(--border);">
+                            <div>
+                                <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">
+                                    Order #{{ order_data.order.order_number }}
+                                </h3>
+                                <p class="text-gray">
+                                    <i class="fas fa-calendar"></i> {{ order_data.order.created_at|date:"F d, Y - g:i A" }}
+                                </p>
+                                <p class="text-gray">
+                                    <i class="fas fa-user"></i> {{ order_data.order.full_name }}
+                                </p>
+                                <p class="text-gray">
+                                    <i class="fas fa-envelope"></i> {{ order_data.order.email }}
+                                </p>
+                            </div>
+                            
+                            <div style="text-align: right;">
+                                <span style="display: inline-block; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem;
+                                    {% if order_data.order.status == 'delivered' %}background: var(--secondary); color: white;
+                                    {% elif order_data.order.status == 'cancelled' %}background: var(--danger); color: white;
+                                    {% elif order_data.order.status == 'shipped' %}background: var(--warning); color: white;
+                                    {% else %}background: var(--light-gray); color: var(--dark);{% endif %}">
+                                    <i class="fas fa-circle" style="font-size: 0.5rem;"></i> {{ order_data.order.get_status_display }}
+                                </span>
+                                <br>
+                                <span style="display: inline-block; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; font-size: 0.875rem;
+                                    {% if order_data.order.payment_status == 'paid' %}background: var(--secondary); color: white;
+                                    {% else %}background: var(--warning); color: white;{% endif %}">
+                                    <i class="fas fa-credit-card"></i> {{ order_data.order.payment_status|title }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- Your Items in this Order -->
+                        <h4 style="margin-bottom: 1rem;"><i class="fas fa-box"></i> Your Items</h4>
+                        <div style="display: grid; gap: 1rem; margin-bottom: 1.5rem;">
+                            {% for item in order_data.items %}
+                                <div style="display: flex; gap: 1rem; align-items: center; padding: 1rem; background: var(--light-gray); border-radius: 0.5rem;">
+                                    {% if item.product and item.product.image %}
+                                        <img src="{{ item.product.image.url }}" alt="{{ item.product_name }}" 
+                                             style="width: 80px; height: 80px; object-fit: cover; border-radius: 0.5rem;">
+                                    {% else %}
+                                        <div style="width: 80px; height: 80px; background: white; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-image" style="color: var(--gray); font-size: 2rem;"></i>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <div style="flex: 1;">
+                                        <p style="font-weight: 600; font-size: 1.125rem; margin-bottom: 0.25rem;">{{ item.product_name }}</p>
+                                        <p class="text-gray">
+                                            Quantity: {{ item.quantity }} × ₦{{ item.product_price|floatformat:0 }}
+                                        </p>
+                                    </div>
+                                    
+                                    <div style="text-align: right;">
+                                        <p style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">
+                                            ₦{{ item.total_price|floatformat:0 }}
+                                        </p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Shipping Information -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; padding: 1.5rem; background: var(--light-gray); border-radius: 0.5rem; margin-bottom: 1.5rem;">
+                            <div>
+                                <h4 style="margin-bottom: 1rem;"><i class="fas fa-shipping-fast"></i> Shipping Address</h4>
+                                <p style="margin-bottom: 0.5rem;"><strong>{{ order_data.order.full_name }}</strong></p>
+                                <p class="text-gray" style="line-height: 1.6;">
+                                    {{ order_data.order.shipping_address }}<br>
+                                    {{ order_data.order.shipping_city }}, {{ order_data.order.shipping_state }} {{ order_data.order.shipping_postal_code }}<br>
+                                    {{ order_data.order.shipping_country }}<br>
+                                    Phone: {{ order_data.order.phone }}
+                                </p>
+                            </div>
+                            
+                            <div>
+                                <h4 style="margin-bottom: 1rem;"><i class="fas fa-receipt"></i> Order Summary</h4>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                    <span class="text-gray">Your Items Total:</span>
+                                    <span style="font-weight: 600;">₦{{ order_data.vendor_total|floatformat:0 }}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                    <span class="text-gray">Order Total:</span>
+                                    <span style="font-weight: 600;">₦{{ order_data.order.total_price|floatformat:0 }}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding-top: 0.5rem; border-top: 1px solid var(--border); margin-top: 0.5rem;">
+                                    <span style="font-weight: 600;">Payment Method:</span>
+                                    <span>{{ order_data.order.payment_method|title }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                            <a href="{% url 'order_detail' order_data.order.id %}" class="btn btn-outline">
+                                <i class="fas fa-eye"></i> View Full Order
+                            </a>
+                            {% if order_data.order.status == 'pending' %}
+                                <button class="btn btn-secondary">
+                                    <i class="fas fa-check"></i> Mark as Processing
+                                </button>
+                            {% elif order_data.order.status == 'processing' %}
+                                <button class="btn btn-primary">
+                                    <i class="fas fa-shipping-fast"></i> Mark as Shipped
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card">
+            <div class="card-body text-center" style="padding: 4rem 2rem;">
+                <i class="fas fa-inbox" style="font-size: 5rem; color: var(--gray); margin-bottom: 1rem;"></i>
+                <h2 class="mb-3">No orders yet</h2>
+                <p class="text-gray mb-4">When customers purchase your products, orders will appear here.</p>
+                <a href="{% url 'vendor_dashboard' %}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle"></i> Add More Products
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

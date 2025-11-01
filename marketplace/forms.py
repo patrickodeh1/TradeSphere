@@ -11,6 +11,16 @@ class UserRegistrationForm(UserCreationForm):
         ('vendor', 'Vendor'),
     ]
     
+    first_name = forms.CharField(
+        max_length=30,
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'First Name'})
+    )
+    last_name = forms.CharField(
+        max_length=30,
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Last Name'})
+    )
     email = forms.EmailField(
         required=True,
         widget=forms.EmailInput(attrs={'class': 'form-input', 'placeholder': 'Email'})
@@ -31,7 +41,7 @@ class UserRegistrationForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password1', 'password2', 'user_type', 'profile_picture', 'bio']
+        fields = ['first_name', 'last_name', 'username', 'email', 'password1', 'password2', 'user_type', 'profile_picture', 'bio']
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Username'}),
         }
@@ -41,7 +51,14 @@ class UserRegistrationForm(UserCreationForm):
         self.fields['password1'].widget.attrs.update({'class': 'form-input', 'placeholder': 'Password'})
         self.fields['password2'].widget.attrs.update({'class': 'form-input', 'placeholder': 'Confirm Password'})
 
-
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.first_name = self.cleaned_data['first_name']
+        user.last_name = self.cleaned_data['last_name']
+        user.email = self.cleaned_data['email']
+        if commit:
+            user.save()
+        return user
 class LoginForm(forms.Form):
     """Form for user login"""
     username = forms.CharField(

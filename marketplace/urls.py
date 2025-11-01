@@ -37,6 +37,8 @@ urlpatterns = [
     
     # Vendor
     path('vendor/dashboard/', views.vendor_dashboard, name='vendor_dashboard'),
+    path('vendor/orders/', views.vendor_orders, name='vendor_orders'),
+    path('vendor/analytics/', views.vendor_analytics, name='vendor_analytics'),
     
     # Authentication
     path('register/', views.register, name='register'),
