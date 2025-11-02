@@ -3,12 +3,13 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 import uuid
+from cloudinary_storage.storage import MediaCloudinaryStorage
 
 class Category(models.Model):
     """Model to represent a product category"""
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(blank=True)
-    image = models.ImageField(upload_to='categories/', blank=True, null=True)
+    image = models.ImageField(upload_to='tradesphere_media/projects/', storage=MediaCloudinaryStorage(), blank=True, null=True)
     slug = models.SlugField(max_length=255, unique=True, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True)
@@ -29,7 +30,7 @@ class Category(models.Model):
 class UserProfile(models.Model):
     """Model to store additional user information"""
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
+    profile_picture = models.ImageField(upload_to='tradesphere_media/projects/', storage=MediaCloudinaryStorage(), blank=True, null=True)
     bio = models.TextField(blank=True)
     phone = models.CharField(max_length=20, blank=True)
     
@@ -53,7 +54,7 @@ class Vendor(models.Model):
     contact_email = models.EmailField()
     contact_phone = models.CharField(max_length=20, blank=True, null=True)
     website = models.URLField(blank=True, null=True)
-    logo = models.ImageField(upload_to='vendor_logos/', blank=True, null=True)
+    logo = models.ImageField(upload_to='tradesphere_media/projects/', storage=MediaCloudinaryStorage(), blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     slug = models.SlugField(max_length=255, unique=True, blank=True)
@@ -108,7 +109,7 @@ class Product(models.Model):
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     compare_at_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    image = models.ImageField(upload_to='products/', blank=True, null=True)
+    image = models.ImageField(upload_to='tradesphere_media/projects/', storage=MediaCloudinaryStorage(), blank=True, null=True)
     stock = models.PositiveIntegerField(default=0)
     is_featured = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
